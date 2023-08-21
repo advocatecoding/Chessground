@@ -8,7 +8,7 @@ import {
   queen_white,
   king_white,
   pawn_white
-} from './data/fields'; 
+} from './data/fields';
 // Importiere die Pfade zu den schwarzen Bildern aus der entsprechenden Datei
 import {
   rook_black,
@@ -22,7 +22,7 @@ import fieldsData from './data/fields';
 
 
 function App() {
- 
+
   const cordY = [8, 7, 6, 5, 4, 3, 2, 1];
 
   const cordX = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -31,18 +31,22 @@ function App() {
 
   const blackPieces = [rook_black, knight_black, bishop_black, queen_black, king_black, pawn_black]
 
-  const [move, setMove] = useState(2);
+  // Ob weiß oder schwarz dran ist
+  const [turn, setTurn] = useState(2);
 
+  // Wo die Figur hin kann
   const [curMovableFields, setCurMovableFields] = useState([])
 
   // Geschlagene Figuren speichern 
   const [blackPiecesTaken, setBlackPiecesTaken] = useState([king_black])
   const [whitePiecesTaken, setWhitePiecesTaken] = useState([queen_white])
 
-
+  // Die Figurenverteilung auf dem Feld 
   const [fields, setFields] = useState(fieldsData)
 
+  // Ist eine Figur ausgewählt?
   const [pieceIsSelected, setSelectPiece] = useState(false);
+  // Welche Figur ist grad ausgewählt?
   const [currentPiece, setCurrentPiece] = useState(null);
 
   const showMovableFields = (field) => {
@@ -51,7 +55,7 @@ function App() {
     switch (fields[field]) {
 
       case pawn_white:
-       
+
         var possibleFields = []
 
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
@@ -152,6 +156,8 @@ function App() {
   }
 
 
+  const [moves, setMoves] = useState([]);
+
   const handleClick = (field) => {
     console.log(squareNames[field])
 
@@ -159,7 +165,8 @@ function App() {
     if (!pieceIsSelected) {
       selectPiece(field)
     } else {
-      // Wenn schon eins ausgewählt ist soll er bewegt werden
+      // Wenn schon eins ausgewählt ist soll er bewegt werden => movePiece(field)
+      // Außer es ist eine Figur gleicher Farbe -> Man will doch eine andere Figur bewegen
       if (whitePieces.includes(fields[field])) {
         console.log("Neue Figur")
         resetHighlights()
@@ -184,7 +191,6 @@ function App() {
     }
   }
 
-
   const resetHighlights = () => {
     // Speichert alle Squares und werden danach alle demarkiert  
     var allFields = document.querySelectorAll(".highlighter")
@@ -195,16 +201,14 @@ function App() {
 
   const selectPiece = (field) => {
     // Prüfen ob weiß dran ist 
-    if (move % 2 === 0) {
+    if (turn % 2 === 0) {
       console.log("----", fields[field])
       // Prüfen ob auch eine weiße Figur ausgewählt wurde
       if (whitePieces.includes(fields[field])) {
-        console.log("sasd")
         //movePiece(field)
         showMovableFields(field)
         setSelectPiece(true)
         setCurrentPiece(field)
-        //console.log("Figur ausgewählt", field)
       } else {
         return
       }
@@ -238,18 +242,32 @@ function App() {
         }
       }
 
+      var playedMove = ""
+      if (turn % 2 === 0) {
+        console.log("turn = 1")
+        playedMove = squareNames[newField] + ""
+      } else {
+        playedMove = " " + squareNames[newField]
+      }
+
+
+      setMoves([...moves, playedMove])
+      console.log(moves)
       // Neuer Field wird mit der ausgewählten Figur besetzt
       fields[newField] = fields[`${currentPiece}`]
+      // Das davorige Feld wird leer, also undefined gesetzt
       fields[currentPiece] = undefined
       setFields({ ...fields })
       // Figur wird vom alten Field gelöscht 
       setSelectPiece(false)
       resetHighlights()
-      setMove(move + 1)
+      setTurn(turn + 1)
     }
   }
 
-  const addGame = () => {
+  const newGame = () => {
+    setFields(fieldsData)
+    setTurn(2)
     console.log("new Game")
   }
 
@@ -257,19 +275,32 @@ function App() {
   return (
     <>
       {/** Wer ist an der Reihe?*/}
-      <div className='absolute right-8 top-8 h-24 w-24 flex flex-wrap content-center justify-center text-6xl'
 
-        style={move % 2 !== 0 ? { backgroundColor: "black", color: "white" } : { backgroundColor: "white", color: "black" }}>
+      <div className='absolute right-8 bottom-8 h-16 w-16 flex flex-wrap content-center justify-center text-4xl'
+        style={turn % 2 !== 0 ? { backgroundColor: "black", color: "white" } : { backgroundColor: "white", color: "black" }}>
+        <p>
+          {Math.floor(turn / 2)}
+        </p>
+      </div>
 
-        {Math.floor(move / 2)}
 
+      <div className="grid grid-cols-6 gap-2 absolute right-8 top-8">
+  {moves.length > 0 && (
+    moves.map((move, index) => (
+      <div key={index} className="col-span-3 text-white">
+                {index % 2 === 0 ? `${index / 2 + 1}. ${move}` : move}
 
       </div>
+    ))
+  )}
+</div>
+
+
 
       <div className='absolute left-8 top-8'>
         <button
-          onClick={addGame}
-         className="bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">
+          onClick={newGame}
+          className="bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">
           Neues Spiel
         </button>
       </div>
