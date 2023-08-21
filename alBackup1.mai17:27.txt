@@ -1,57 +1,91 @@
 import './input.css';
 import { useState } from 'react';
-import squareNames from './data/squareName';
-import {
-  rook_white,
-  knight_white,
-  bishop_white,
-  queen_white,
-  king_white,
-  pawn_white
-} from './data/fields'; 
-// Importiere die Pfade zu den schwarzen Bildern aus der entsprechenden Datei
-import {
-  rook_black,
-  knight_black,
-  bishop_black,
-  queen_black,
-  king_black,
-  pawn_black
-} from './data/fields';
-import fieldsData from './data/fields';
+import pawnWhite from './images/pawn_white.png'
+import bishopWhite from './images/bishop_white.png'
+import kingWhite from './images/king_white.png'
+import queenWhite from './images/queen_white.png'
+import rookWhite from './images/rook_white.png'
+import knightWhite from './images/knight_white.png'
+import highlighter from "./images/highlighter.png"
+import pawnBlack from './images/pawn_black.png';
+import bishopBlack from './images/bishop_black.png';
+import kingBlack from './images/king_black.png';
+import queenBlack from './images/queen_black.png';
+import rookBlack from './images/rook_black.png';
+import knightBlack from './images/knight_black.png';
+
 
 
 function App() {
- 
+
   const cordY = [8, 7, 6, 5, 4, 3, 2, 1];
 
   const cordX = [1, 2, 3, 4, 5, 6, 7, 8];
 
-  const whitePieces = [rook_white, knight_white, bishop_white, queen_white, king_white, pawn_white]
+  const whitePieces = [rookWhite, knightWhite, bishopWhite, queenWhite, kingWhite, pawnWhite]
 
-  const blackPieces = [rook_black, knight_black, bishop_black, queen_black, king_black, pawn_black]
+  const blackPieces = [rookBlack, knightBlack, bishopBlack, queenBlack, kingBlack, pawnBlack]
 
   const [move, setMove] = useState(2);
 
   const [curMovableFields, setCurMovableFields] = useState([])
 
   // Geschlagene Figuren speichern 
-  const [blackPiecesTaken, setBlackPiecesTaken] = useState([king_black])
-  const [whitePiecesTaken, setWhitePiecesTaken] = useState([queen_white])
+  const [blackPiecesTaken, setBlackPiecesTaken] = useState([kingBlack])
+  const [whitePiecesTaken, setWhitePiecesTaken] = useState([queenWhite])
 
 
-  const [fields, setFields] = useState(fieldsData)
+  const [fields, setFields] = useState({
+    11: rookWhite,
+    21: knightWhite,
+    31: bishopWhite,
+    41: queenWhite,
+    51: kingWhite,
+    61: bishopWhite,
+    71: knightWhite,
+    81: rookWhite,
+
+    12: pawnWhite,
+    22: pawnWhite,
+    32: pawnWhite,
+    42: pawnWhite,
+    52: pawnWhite,
+    62: pawnWhite,
+    72: pawnWhite,
+    82: pawnWhite,
+
+    17: pawnBlack,
+    27: pawnBlack,
+    37: pawnBlack,
+    47: pawnBlack,
+    57: pawnBlack,
+    67: pawnBlack,
+    77: pawnBlack,
+    87: pawnBlack,
+
+    18: rookBlack,
+    28: knightBlack,
+    38: bishopBlack,
+    48: queenBlack,
+    58: kingBlack,
+    68: bishopBlack,
+    78: knightBlack,
+    88: rookBlack,
+
+  })
+
+
+
 
   const [pieceIsSelected, setSelectPiece] = useState(false);
   const [currentPiece, setCurrentPiece] = useState(null);
 
   const showMovableFields = (field) => {
-    var x = parseInt(field[0])
-    var y = parseInt(field[1])
     switch (fields[field]) {
 
-      case pawn_white:
-       
+      case pawnWhite:
+        var x = parseInt(field[0])
+        var y = parseInt(field[1])
         var possibleFields = []
 
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
@@ -83,7 +117,9 @@ function App() {
         highlightMovableFields(possibleFields)
         break;
 
-      case pawn_black:
+      case pawnBlack:
+        var x = parseInt(field[0])
+        var y = parseInt(field[1])
         var possibleFields = []
 
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
@@ -112,40 +148,6 @@ function App() {
         }
         highlightMovableFields(possibleFields)
         break;
-
-      case knight_white:
-      case knight_black:
-        var possibleFields = []
-
-        // Alle theoretisch bewegbaren Felder
-        var f1 = (x + 1).toString() + (y - 2).toString()
-        var f2 = (x + 2).toString() + (y - 1).toString()
-        var f3 = (x + 2).toString() + (y + 1).toString()
-        var f4 = (x + 1).toString() + (y + 2).toString()
-        var f5 = (x - 1).toString() + (y + 2).toString()
-        var f6 = (x - 2).toString() + (y + 1).toString()
-        var f7 = (x - 2).toString() + (y - 1).toString()
-        var f8 = (x - 1).toString() + (y - 2).toString()
-
-        let possibleMoves = [f1, f2, f3, f4, f5, f6, f7, f8]
-
-        // Prüfen ob das Feld leer ist bzw. undefined
-        for (let i = 0; i < possibleMoves.length; i++) {
-          //console.log(possibleMoves)
-          if (fields[field] === knight_black) {
-            if (!blackPieces.includes(fields[possibleMoves[i]])) {
-              possibleFields.push(possibleMoves[i])
-            }
-
-          } else {
-            if (!whitePieces.includes(fields[possibleMoves[i]])) {
-              possibleFields.push(possibleMoves[i])
-            }
-          }
-        }
-
-        highlightMovableFields(possibleFields)
-        break;
       default:
         break;
     }
@@ -153,18 +155,11 @@ function App() {
 
 
   const handleClick = (field) => {
-    console.log(squareNames[field])
-
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
       selectPiece(field)
     } else {
       // Wenn schon eins ausgewählt ist soll er bewegt werden
-      if (whitePieces.includes(fields[field])) {
-        console.log("Neue Figur")
-        resetHighlights()
-        selectPiece(field)
-      }
       movePiece(field)
     }
   }
@@ -175,12 +170,9 @@ function App() {
 
     for (let i = 0; i < movableFields.length; i++) {
       var img = document.createElement("img");
-      img.setAttribute("src", "/images/highlighter.png");
+      img.setAttribute("src", highlighter);
       img.setAttribute("class", "highlighter")
-      var field = document.getElementById(movableFields[i])
-      if (field !== null) {
-        field.appendChild(img)
-      }
+      document.getElementById(movableFields[i]).appendChild(img)
     }
   }
 
@@ -196,10 +188,7 @@ function App() {
   const selectPiece = (field) => {
     // Prüfen ob weiß dran ist 
     if (move % 2 === 0) {
-      console.log("----", fields[field])
-      // Prüfen ob auch eine weiße Figur ausgewählt wurde
       if (whitePieces.includes(fields[field])) {
-        console.log("sasd")
         //movePiece(field)
         showMovableFields(field)
         setSelectPiece(true)
@@ -222,18 +211,18 @@ function App() {
   }
 
   const movePiece = (newField) => {
-    console.log("wird bewegt nach", squareNames[newField])
+    //console.log("wird bewegt nach", newField)
 
     // Prüfen ob der zu bewegende Square besetzbar ist von der aktuellen Figur 
     if (curMovableFields.includes(newField)) {
       // Geschlagene Figur speichern in der geschlagenen Liste
-      const takenPiece = fields[newField]
+      const takenPiece = fields[newField] 
       // Schauen ob das besetzte Feld aktuell eine Figur hatte 
       if (takenPiece !== undefined) {
         if (blackPieces.includes(takenPiece)) {
           // Liste erweitern um takenPiece
           setBlackPiecesTaken([...blackPiecesTaken, takenPiece])
-        } else {
+        }else {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
@@ -244,13 +233,13 @@ function App() {
       setFields({ ...fields })
       // Figur wird vom alten Field gelöscht 
       setSelectPiece(false)
+
+      
+
+
       resetHighlights()
       setMove(move + 1)
     }
-  }
-
-  const addGame = () => {
-    console.log("new Game")
   }
 
 
@@ -263,15 +252,6 @@ function App() {
 
         {Math.floor(move / 2)}
 
-
-      </div>
-
-      <div className='absolute left-8 top-8'>
-        <button
-          onClick={addGame}
-         className="bg-teal-600 hover:bg-teal-800 text-white font-bold py-2 px-4 rounded">
-          Neues Spiel
-        </button>
       </div>
 
 
