@@ -29,6 +29,8 @@ function App() {
   const moveSound = new Audio(moveAudio);
   const captureSound = new Audio(captureAudio);
 
+  // Rotation des Bretts
+  const [isBoardRotated, setIsBoardRotated] = useState(false);
 
   const cordY = [8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -307,7 +309,7 @@ function App() {
               f5_prev = false;
             }
           }
-          
+
           if (f6_prev === true) {
             if (isValidField(f6)) {
               possibleFields.push(f6);
@@ -315,7 +317,7 @@ function App() {
               f6_prev = false;
             }
           }
-          
+
           if (f7_prev === true) {
             if (isValidField(f7)) {
               possibleFields.push(f7);
@@ -323,7 +325,7 @@ function App() {
               f7_prev = false;
             }
           }
-          
+
           if (f8_prev === true) {
             if (isValidField(f8)) {
               possibleFields.push(f8);
@@ -331,7 +333,7 @@ function App() {
               f8_prev = false;
             }
           }
-          
+
         }
         highlightMovableFields(possibleFields)
         break;
@@ -346,28 +348,28 @@ function App() {
     // + das feld muss in eine number umgewandelt werden, da die fieldKeys vom Typ number sind 
     if (fieldKeys.includes(parseInt(field))) {
       // Prüfe ob das angezeigte Ziel-Feld eine Schwarze Figur ist
-      if (turn % 2 === 0)  {
-         // Prüfe ob das angezeigte Ziel-Feld eine Weiße Figur ist
-         if (whitePieces.includes(fields[field])) {
+      if (turn % 2 === 0) {
+        // Prüfe ob das angezeigte Ziel-Feld eine Weiße Figur ist
+        if (whitePieces.includes(fields[field])) {
           console.log("weiß False")
           return false
         } else {
           console.log("weiß True")
           return true
         }
-        
+
       }
       // Prüfe falls es eine weiße Figur ist  
       else {
-       // Wenn schwarz => Schaue ob das Feld von einer Schwarzen Figur besetzt ist
-       if (blackPieces.includes(fields[field])) {
-        console.log("False", squareNames[field])
-        return false
-      }
-      else {
-        console.log("True", squareNames[field])
-        return true
-      }
+        // Wenn schwarz => Schaue ob das Feld von einer Schwarzen Figur besetzt ist
+        if (blackPieces.includes(fields[field])) {
+          console.log("False", squareNames[field])
+          return false
+        }
+        else {
+          console.log("True", squareNames[field])
+          return true
+        }
       }
     }
 
@@ -484,6 +486,7 @@ function App() {
       setSelectPiece(false)
       resetHighlights()
       setTurn(turn + 1)
+      setIsBoardRotated(!isBoardRotated)
     }
   }
 
@@ -492,6 +495,7 @@ function App() {
     setTurn(2)
     console.log("new Game")
   }
+
 
 
   return (
@@ -505,7 +509,6 @@ function App() {
         </p>
       </div>
 
-
       <div className="grid grid-cols-6 gap-2 absolute right-8 top-8">
         {moves.length > 0 && (
           moves.map((move, index) => (
@@ -517,8 +520,6 @@ function App() {
         )}
       </div>
 
-
-
       <div className='absolute left-8 top-8'>
         <button
           onClick={newGame}
@@ -527,9 +528,8 @@ function App() {
         </button>
       </div>
 
-
       {/** Feld */}
-      <div className="relative grid-cols-8 inline-grid m-auto">
+      <div className={`relative grid-cols-8 inline-grid m-auto ${isBoardRotated ? 'rotate-board' : ''}`}>
         {cordY.map((number) => {
           if (number % 2 === 0) {
             return cordX.map((letter, index) => {
@@ -537,7 +537,9 @@ function App() {
               return (<div className={`w-24 h-24 field ${color}`} id={`${letter}${number}`}
                 style={{
                   backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
-                  backgroundSize: "cover", cursor: "pointer"
+                  backgroundSize: "cover",
+                  cursor: "pointer",
+                  transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
                 onClick={() => handleClick(`${letter}${number}`)}>
               </div>)
@@ -548,7 +550,8 @@ function App() {
               return (<div className={`w-24 h-24 field ${color}`} id={`${letter}${number}`}
                 style={{
                   backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
-                  backgroundSize: "cover", cursor: "pointer"
+                  backgroundSize: "cover", cursor: "pointer",
+                  transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
                 onClick={() => handleClick(`${letter}${number}`)}>
               </div>)

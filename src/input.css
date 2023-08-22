@@ -14,3 +14,8 @@ body {
     display: flex;
 }
 
+.rotate-board {
+    transform: rotate(180deg);
+    direction: rtl; /* Diese Zeile ändert die Richtung der Schachfelder für den Fall, dass sie um 180 Grad gedreht sind */
+  }
+  
