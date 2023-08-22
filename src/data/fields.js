@@ -15,6 +15,11 @@ export const  PUBLIC_URL = process.env.PUBLIC_URL;
  export const  queen_white = PUBLIC_URL + "/images/queen_white.png";
  export const  rook_white = PUBLIC_URL + "/images/rook_white.png";
 
+
+ // Sounds
+ export const moveAudio = PUBLIC_URL + "/sounds/move.mp3"
+ export const captureAudio = PUBLIC_URL + "/sounds/capture.mp3"
+
 const  fieldsData = {
     11: rook_white,
     21: knight_white,

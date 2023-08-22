@@ -7,7 +7,8 @@ import {
   bishop_white,
   queen_white,
   king_white,
-  pawn_white
+  pawn_white,
+  captureSound
 } from './data/fields';
 // Importiere die Pfade zu den schwarzen Bildern aus der entsprechenden Datei
 import {
@@ -19,9 +20,15 @@ import {
   pawn_black
 } from './data/fields';
 import fieldsData from './data/fields';
+import { moveAudio, captureAudio } from './data/fields';
 
 
 function App() {
+
+  // Sounds
+  const moveSound = new Audio(moveAudio);
+  const captureSound = new Audio(captureAudio);
+
 
   const cordY = [8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -38,8 +45,8 @@ function App() {
   const [curMovableFields, setCurMovableFields] = useState([])
 
   // Geschlagene Figuren speichern 
-  const [blackPiecesTaken, setBlackPiecesTaken] = useState([king_black])
-  const [whitePiecesTaken, setWhitePiecesTaken] = useState([queen_white])
+  const [blackPiecesTaken, setBlackPiecesTaken] = useState([])
+  const [whitePiecesTaken, setWhitePiecesTaken] = useState([])
 
   // Die Figurenverteilung auf dem Feld 
   const [fields, setFields] = useState(fieldsData)
@@ -50,18 +57,35 @@ function App() {
   const [currentPiece, setCurrentPiece] = useState(null);
 
   const showMovableFields = (field) => {
+    var possibleFields = []
+
+    // X und Y sind die aktuelle Position
     var x = parseInt(field[0])
     var y = parseInt(field[1])
+
+    let f1 = ""
+    let f2 = ""
+    let f3 = ""
+    let f4 = ""
+    let f5 = ""
+    let f6 = ""
+    let f7 = ""
+    let f8 = ""
+
+    let f1_prev = true
+    let f2_prev = true
+    let f3_prev = true
+    let f4_prev = true
+    let f5_prev = true
+    let f6_prev = true
+    let f7_prev = true
+    let f8_prev = true
+
     switch (fields[field]) {
-
       case pawn_white:
-
-        var possibleFields = []
-
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
-        var f1 = x + (y + 1).toString()
-
-        var f2 = x + (y + 2).toString()
+        f1 = x + (y + 1).toString()
+        f2 = x + (y + 2).toString()
 
         // Prüfen ob das Feld leer ist bzw. undefined
         if (fields[f1] === undefined) {
@@ -74,8 +98,8 @@ function App() {
         }
 
         // Prüfen ob er Schlagen kann
-        var f3 = (x - 1).toString() + (y + 1).toString()
-        var f4 = (x + 1).toString() + (y + 1).toString()
+        f3 = (x - 1).toString() + (y + 1).toString()
+        f4 = (x + 1).toString() + (y + 1).toString()
         if (blackPieces.includes(fields[f3])) {
           possibleFields.push(f3)
         }
@@ -88,12 +112,9 @@ function App() {
         break;
 
       case pawn_black:
-        var possibleFields = []
-
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
-        var f1 = x + (y - 1).toString()
-
-        var f2 = x + (y - 2).toString()
+        f1 = x + (y - 1).toString()
+        f2 = x + (y - 2).toString()
 
         // Prüfen ob das Feld leer ist bzw. undefined
         if (fields[f1] === undefined) {
@@ -106,8 +127,8 @@ function App() {
         }
 
         // Prüfen ob er Schlagen kann
-        var f3 = (x - 1).toString() + (y - 1).toString()
-        var f4 = (x + 1).toString() + (y - 1).toString()
+        f3 = (x - 1).toString() + (y - 1).toString()
+        f4 = (x + 1).toString() + (y - 1).toString()
         if (whitePieces.includes(fields[f3])) {
           possibleFields.push(f3)
         }
@@ -119,41 +140,239 @@ function App() {
 
       case knight_white:
       case knight_black:
-        var possibleFields = []
-
         // Alle theoretisch bewegbaren Felder
-        var f1 = (x + 1).toString() + (y - 2).toString()
-        var f2 = (x + 2).toString() + (y - 1).toString()
-        var f3 = (x + 2).toString() + (y + 1).toString()
-        var f4 = (x + 1).toString() + (y + 2).toString()
-        var f5 = (x - 1).toString() + (y + 2).toString()
-        var f6 = (x - 2).toString() + (y + 1).toString()
-        var f7 = (x - 2).toString() + (y - 1).toString()
-        var f8 = (x - 1).toString() + (y - 2).toString()
+        f1 = (x + 1).toString() + (y - 2).toString()
+        f2 = (x + 2).toString() + (y - 1).toString()
+        f3 = (x + 2).toString() + (y + 1).toString()
+        f4 = (x + 1).toString() + (y + 2).toString()
+        f5 = (x - 1).toString() + (y + 2).toString()
+        f6 = (x - 2).toString() + (y + 1).toString()
+        f7 = (x - 2).toString() + (y - 1).toString()
+        f8 = (x - 1).toString() + (y - 2).toString()
 
         let possibleMoves = [f1, f2, f3, f4, f5, f6, f7, f8]
 
-        // Prüfen ob das Feld leer ist bzw. undefined
         for (let i = 0; i < possibleMoves.length; i++) {
-          //console.log(possibleMoves)
-          if (fields[field] === knight_black) {
-            if (!blackPieces.includes(fields[possibleMoves[i]])) {
-              possibleFields.push(possibleMoves[i])
-            }
+          if (isValidField(possibleMoves[i])) possibleFields.push(possibleMoves[i]);
+        }
+        highlightMovableFields(possibleFields)
+        break;
+      case bishop_white:
+      case bishop_black:
+        // Berechne die möglichen Felder für den Läufer
+        // iteration durch 7 weil nur 7 maximal gelaufen werden können
+        for (let i = 1; i <= 7; i++) {
+          // 1 nach rechts 1 nach oben usw.
+          f1 = (x + i).toString() + (y + i).toString();
+          f2 = (x + i).toString() + (y - i).toString();
+          f3 = (x - i).toString() + (y + i).toString();
+          f4 = (x - i).toString() + (y - i).toString();
 
-          } else {
-            if (!whitePieces.includes(fields[possibleMoves[i]])) {
-              possibleFields.push(possibleMoves[i])
+          if (f1_prev === true) {
+            if (isValidField(f1)) {
+              possibleFields.push(f1)
+            } else {
+              f1_prev = false
+            }
+          }
+          if (f2_prev === true) {
+            if (isValidField(f2)) {
+              possibleFields.push(f2)
+            } else {
+              f2_prev = false
+            }
+          }
+          if (f3_prev === true) {
+            if (isValidField(f3)) {
+              possibleFields.push(f3)
+            } else {
+              f3_prev = false
+            }
+          }
+          if (f4_prev === true) {
+            if (isValidField(f4)) {
+              possibleFields.push(f4)
+            } else {
+              f4_prev = false
             }
           }
         }
+        console.log(possibleFields)
+        highlightMovableFields(possibleFields)
+        break;
+      case rook_black:
+      case rook_white:
+        for (let i = 1; i <= 7; i++) {
+          // 1 nach rechts 1 nach oben usw.
+          f1 = (x + i).toString() + y.toString();
+          f2 = (x - i).toString() + y.toString();
+          f3 = (x).toString() + (y + i).toString();
+          f4 = (x).toString() + (y - i).toString();
+          if (f1_prev === true) {
+            if (isValidField(f1)) {
+              possibleFields.push(f1)
+            } else {
+              f1_prev = false
+            }
+          }
+          if (f2_prev === true) {
+            if (isValidField(f2)) {
+              possibleFields.push(f2)
+            } else {
+              f2_prev = false
+            }
+          }
+          if (f3_prev === true) {
+            if (isValidField(f3)) {
+              possibleFields.push(f3)
+            } else {
+              f3_prev = false
+            }
+          }
+          if (f4_prev === true) {
+            if (isValidField(f4)) {
+              possibleFields.push(f4)
+            } else {
+              f4_prev = false
+            }
+          }
+        }
+        highlightMovableFields(possibleFields)
+        break;
+      case king_black:
+      case king_white:
+        let symetry = [-1, 1]
+        for (let i = 0; i < symetry.length; i++) {
+          console.log(symetry[i])
+          // Links und rechts
+          f1 = (x + (1 * (symetry[i]))).toString() + y.toString();
+          // Hoch und runter
+          f2 = x.toString() + (y + (1 * (symetry[i]))).toString();
+          // Diagonal rechts
+          f3 = (x + (1 * (symetry[i]))).toString() + (y + (1 * (symetry[i]))).toString();
+          // Diagonal links
+          f4 = (x + (1 * (symetry[i]))).toString() + (y - (1 * (symetry[i]))).toString();
 
+          if (isValidField(f1)) possibleFields.push(f1);
+          if (isValidField(f2)) possibleFields.push(f2);
+          if (isValidField(f3)) possibleFields.push(f3);
+          if (isValidField(f4)) possibleFields.push(f4);
+        }
+        highlightMovableFields(possibleFields)
+        break;
+      case queen_black:
+      case queen_white:
+        for (let i = 1; i <= 7; i++) {
+          f1 = (x + i).toString() + y.toString();
+          f2 = (x - i).toString() + y.toString();
+          f3 = (x).toString() + (y + i).toString();
+          f4 = (x).toString() + (y - i).toString();
+          f5 = (x + i).toString() + (y + i).toString();
+          f6 = (x + i).toString() + (y - i).toString();
+          f7 = (x - i).toString() + (y + i).toString();
+          f8 = (x - i).toString() + (y - i).toString();
+
+          if (f1_prev === true) {
+            if (isValidField(f1)) {
+              possibleFields.push(f1)
+            } else {
+              f1_prev = false
+            }
+          }
+          if (f2_prev === true) {
+            if (isValidField(f2)) {
+              possibleFields.push(f2)
+            } else {
+              f2_prev = false
+            }
+          }
+          if (f3_prev === true) {
+            if (isValidField(f3)) {
+              possibleFields.push(f3)
+            } else {
+              f3_prev = false
+            }
+          }
+          if (f4_prev === true) {
+            if (isValidField(f4)) {
+              possibleFields.push(f4)
+            } else {
+              f4_prev = false
+            }
+          }
+          if (f5_prev === true) {
+            if (isValidField(f5)) {
+              possibleFields.push(f5);
+            } else {
+              f5_prev = false;
+            }
+          }
+          
+          if (f6_prev === true) {
+            if (isValidField(f6)) {
+              possibleFields.push(f6);
+            } else {
+              f6_prev = false;
+            }
+          }
+          
+          if (f7_prev === true) {
+            if (isValidField(f7)) {
+              possibleFields.push(f7);
+            } else {
+              f7_prev = false;
+            }
+          }
+          
+          if (f8_prev === true) {
+            if (isValidField(f8)) {
+              possibleFields.push(f8);
+            } else {
+              f8_prev = false;
+            }
+          }
+          
+        }
         highlightMovableFields(possibleFields)
         break;
       default:
         break;
     }
   }
+
+  const isValidField = (field) => {
+    const fieldKeys = Object.keys(squareNames).map(Number);
+    // Es wird geschaut ob das jeweilige markierte Feld, welches geprüft wird innerhalb auf dem Brett liegt
+    // + das feld muss in eine number umgewandelt werden, da die fieldKeys vom Typ number sind 
+    if (fieldKeys.includes(parseInt(field))) {
+      // Prüfe ob das angezeigte Ziel-Feld eine Schwarze Figur ist
+      if (turn % 2 === 0)  {
+         // Prüfe ob das angezeigte Ziel-Feld eine Weiße Figur ist
+         if (whitePieces.includes(fields[field])) {
+          console.log("weiß False")
+          return false
+        } else {
+          console.log("weiß True")
+          return true
+        }
+        
+      }
+      // Prüfe falls es eine weiße Figur ist  
+      else {
+       // Wenn schwarz => Schaue ob das Feld von einer Schwarzen Figur besetzt ist
+       if (blackPieces.includes(fields[field])) {
+        console.log("False", squareNames[field])
+        return false
+      }
+      else {
+        console.log("True", squareNames[field])
+        return true
+      }
+      }
+    }
+
+  };
+
 
 
   const [moves, setMoves] = useState([]);
@@ -167,7 +386,7 @@ function App() {
     } else {
       // Wenn schon eins ausgewählt ist soll er bewegt werden => movePiece(field)
       // Außer es ist eine Figur gleicher Farbe -> Man will doch eine andere Figur bewegen
-      if (whitePieces.includes(fields[field])) {
+      if ((whitePieces.includes(fields[field])) || (blackPieces.includes(fields[field]))) {
         console.log("Neue Figur")
         resetHighlights()
         selectPiece(field)
@@ -234,6 +453,8 @@ function App() {
       const takenPiece = fields[newField]
       // Schauen ob das besetzte Feld aktuell eine Figur hatte 
       if (takenPiece !== undefined) {
+        // Capture Sound abspielen
+        captureSound.play();
         if (blackPieces.includes(takenPiece)) {
           // Liste erweitern um takenPiece
           setBlackPiecesTaken([...blackPiecesTaken, takenPiece])
@@ -241,7 +462,8 @@ function App() {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
-
+      // Normaler Zug Sound
+      moveSound.play();
       var playedMove = ""
       if (turn % 2 === 0) {
         console.log("turn = 1")
@@ -285,15 +507,15 @@ function App() {
 
 
       <div className="grid grid-cols-6 gap-2 absolute right-8 top-8">
-  {moves.length > 0 && (
-    moves.map((move, index) => (
-      <div key={index} className="col-span-3 text-white">
-                {index % 2 === 0 ? `${index / 2 + 1}. ${move}` : move}
+        {moves.length > 0 && (
+          moves.map((move, index) => (
+            <div key={index} className="col-span-3 text-white">
+              {index % 2 === 0 ? `${index / 2 + 1}. ${move}` : move}
 
+            </div>
+          ))
+        )}
       </div>
-    ))
-  )}
-</div>
 
 
 
@@ -339,7 +561,7 @@ function App() {
         <div className='absolute bottom-0 flex flex-col-reverse -left-10' >
           {
             blackPiecesTaken.map((piece) => {
-              return <img className='w-8' src={piece}></img>
+              return <img alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
@@ -347,7 +569,7 @@ function App() {
         <div className='absolute top-0 flex flex-col-reverse -left-10' >
           {
             whitePiecesTaken.map((piece) => {
-              return <img className='w-8' src={piece}></img>
+              return <img alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
