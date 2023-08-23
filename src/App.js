@@ -569,7 +569,7 @@ function App() {
           if (number % 2 === 0) {
             return cordX.map((letter, index) => {
               let color = ((index) % 2 === 0) ? "bg-teal-900" : "bg-white"
-              return (<div className={`w-24 h-24 field ${color}`} id={`${letter}${number}`}
+              return (<div className={` field ${color}`} id={`${letter}${number}`}
                 style={{
                   backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
                   backgroundSize: "cover",
@@ -582,7 +582,7 @@ function App() {
           } else {
             return cordX.map((letter, index) => {
               let color = ((index) % 2 === 0) ? "bg-white" : "bg-teal-900"
-              return (<div className={`w-24 h-24 field ${color}`} id={`${letter}${number}`}
+              return (<div className={` field ${color}`} id={`${letter}${number}`}
                 style={{
                   backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
                   backgroundSize: "cover", cursor: "pointer",

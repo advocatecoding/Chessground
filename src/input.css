@@ -19,3 +19,16 @@ body {
     direction: rtl; /* Diese Zeile ändert die Richtung der Schachfelder für den Fall, dass sie um 180 Grad gedreht sind */
   }
   
+.field {
+    width: 6rem;
+    height: 6rem;
+}
+
+@media only screen and (max-width: 600px) {
+    .field {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
+
+
