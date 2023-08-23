@@ -19,6 +19,7 @@ export const  PUBLIC_URL = process.env.PUBLIC_URL;
  // Sounds
  export const moveAudio = PUBLIC_URL + "/sounds/move.mp3"
  export const captureAudio = PUBLIC_URL + "/sounds/capture.mp3"
+ export const castleAudio = PUBLIC_URL + "/sounds/castle.mp3"
 
 const  fieldsData = {
     11: rook_white,
@@ -26,8 +27,8 @@ const  fieldsData = {
     31: bishop_white,
     41: queen_white,
     51: king_white,
-    61: bishop_white,
-    71: knight_white,
+    
+    
     81: rook_white,
 
     12: pawn_white,

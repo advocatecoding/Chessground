@@ -8,7 +8,6 @@ import {
   queen_white,
   king_white,
   pawn_white,
-  captureSound
 } from './data/fields';
 // Importiere die Pfade zu den schwarzen Bildern aus der entsprechenden Datei
 import {
@@ -20,7 +19,8 @@ import {
   pawn_black
 } from './data/fields';
 import fieldsData from './data/fields';
-import { moveAudio, captureAudio } from './data/fields';
+// Audioimport
+import { moveAudio, captureAudio, castleAudio  } from './data/fields';
 
 
 function App() {
@@ -28,6 +28,7 @@ function App() {
   // Sounds
   const moveSound = new Audio(moveAudio);
   const captureSound = new Audio(captureAudio);
+  const castleSound = new Audio(castleAudio);
 
   // Rotation des Bretts
   const [isBoardRotated, setIsBoardRotated] = useState(false);
@@ -56,7 +57,10 @@ function App() {
   // Ist eine Figur ausgewählt?
   const [pieceIsSelected, setSelectPiece] = useState(false);
   // Welche Figur ist grad ausgewählt?
-  const [currentPiece, setCurrentPiece] = useState(null);
+  const [currentField, setCurrentField] = useState(null);
+
+  // Züge werden gespeichert
+  const [moves, setMoves] = useState([]);
 
   const showMovableFields = (field) => {
     var possibleFields = []
@@ -199,7 +203,6 @@ function App() {
             }
           }
         }
-        console.log(possibleFields)
         highlightMovableFields(possibleFields)
         break;
       case rook_black:
@@ -245,7 +248,6 @@ function App() {
       case king_white:
         let symetry = [-1, 1]
         for (let i = 0; i < symetry.length; i++) {
-          console.log(symetry[i])
           // Links und rechts
           f1 = (x + (1 * (symetry[i]))).toString() + y.toString();
           // Hoch und runter
@@ -259,6 +261,18 @@ function App() {
           if (isValidField(f2)) possibleFields.push(f2);
           if (isValidField(f3)) possibleFields.push(f3);
           if (isValidField(f4)) possibleFields.push(f4);
+        }
+        // Rochademöglichkeit prüfen
+        let cur_field = x.toString() + y.toString()
+        if (turn % 2 === 0) {
+          // wenn Weiß
+          if (cur_field === "51" && fields[81] === rook_white) {
+              possibleFields.push("71")
+          }
+        } else {
+          if (cur_field === "58" && fields[88] === rook_black) {
+            possibleFields.push("78")
+        }
         }
         highlightMovableFields(possibleFields)
         break;
@@ -351,36 +365,30 @@ function App() {
       if (turn % 2 === 0) {
         // Prüfe ob das angezeigte Ziel-Feld eine Weiße Figur ist
         if (whitePieces.includes(fields[field])) {
-          console.log("weiß False")
           return false
         } else {
-          console.log("weiß True")
           return true
         }
-
       }
       // Prüfe falls es eine weiße Figur ist  
       else {
         // Wenn schwarz => Schaue ob das Feld von einer Schwarzen Figur besetzt ist
         if (blackPieces.includes(fields[field])) {
-          console.log("False", squareNames[field])
           return false
         }
         else {
-          console.log("True", squareNames[field])
           return true
         }
       }
     }
-
   };
 
 
 
-  const [moves, setMoves] = useState([]);
+
 
   const handleClick = (field) => {
-    console.log(squareNames[field])
+    console.log(field)
 
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
@@ -389,7 +397,6 @@ function App() {
       // Wenn schon eins ausgewählt ist soll er bewegt werden => movePiece(field)
       // Außer es ist eine Figur gleicher Farbe -> Man will doch eine andere Figur bewegen
       if ((whitePieces.includes(fields[field])) || (blackPieces.includes(fields[field]))) {
-        console.log("Neue Figur")
         resetHighlights()
         selectPiece(field)
       }
@@ -423,13 +430,12 @@ function App() {
   const selectPiece = (field) => {
     // Prüfen ob weiß dran ist 
     if (turn % 2 === 0) {
-      console.log("----", fields[field])
       // Prüfen ob auch eine weiße Figur ausgewählt wurde
       if (whitePieces.includes(fields[field])) {
         //movePiece(field)
         showMovableFields(field)
         setSelectPiece(true)
-        setCurrentPiece(field)
+        setCurrentField(field)
       } else {
         return
       }
@@ -438,7 +444,7 @@ function App() {
         //movePiece(field)
         showMovableFields(field)
         setSelectPiece(true)
-        setCurrentPiece(field)
+        setCurrentField(field)
         //console.log("Figur ausgewählt", field)
       } else {
         return
@@ -447,8 +453,6 @@ function App() {
   }
 
   const movePiece = (newField) => {
-    console.log("wird bewegt nach", squareNames[newField])
-
     // Prüfen ob der zu bewegende Square besetzbar ist von der aktuellen Figur 
     if (curMovableFields.includes(newField)) {
       // Geschlagene Figur speichern in der geschlagenen Liste
@@ -464,8 +468,11 @@ function App() {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
-      // Normaler Zug Sound
-      moveSound.play();
+     
+
+      console.log("wird bewegt nach", squareNames[newField])
+
+      // Zugreihenfolge 
       var playedMove = ""
       if (turn % 2 === 0) {
         console.log("turn = 1")
@@ -473,14 +480,42 @@ function App() {
       } else {
         playedMove = " " + squareNames[newField]
       }
-
-
       setMoves([...moves, playedMove])
       console.log(moves)
+
+
       // Neuer Field wird mit der ausgewählten Figur besetzt
-      fields[newField] = fields[`${currentPiece}`]
+      fields[newField] = fields[`${currentField}`]
       // Das davorige Feld wird leer, also undefined gesetzt
-      fields[currentPiece] = undefined
+      fields[currentField] = undefined
+
+      
+      // Rochade prüfen => Der Rook muss sich auch bewegen
+      // Wir prüfen vorher bei showMovableFields ob eine Rochade überhaupt möglich ist
+      // Hier muss nur noch der Rook mitbewegt werden
+      if (turn % 2 === 0) {
+      if (currentField === "51" && newField === "71") {
+        fields["61"] = rook_white
+        fields["81"] = undefined
+        
+        castleSound.play()
+        
+      } else {
+         // Normaler Zug Sound
+        moveSound.play();
+      } 
+      } else {
+        if (currentField === "58" && newField === "78") {
+          fields["68"] = rook_black
+          fields["88"] = undefined
+          castleSound.play()
+        }
+        else {
+          moveSound.play();
+        }
+      }
+      //console.log("Curren piece", typeof(currentField))
+
       setFields({ ...fields })
       // Figur wird vom alten Field gelöscht 
       setSelectPiece(false)
@@ -564,7 +599,11 @@ function App() {
         <div className='absolute bottom-0 flex flex-col-reverse -left-10' >
           {
             blackPiecesTaken.map((piece) => {
-              return <img alt='taken_piece_black' className='w-8' src={piece}></img>
+              return <img
+              style={{
+                transform: isBoardRotated ? "rotate(180deg)" : null
+              }} 
+              alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
@@ -572,7 +611,11 @@ function App() {
         <div className='absolute top-0 flex flex-col-reverse -left-10' >
           {
             whitePiecesTaken.map((piece) => {
-              return <img alt='taken_piece_black' className='w-8' src={piece}></img>
+              return <img 
+              style={{
+                transform: isBoardRotated ? "rotate(180deg)" : null
+              }} 
+              alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
