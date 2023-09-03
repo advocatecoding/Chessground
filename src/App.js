@@ -279,16 +279,8 @@ function App() {
       case queen_black:
       case queen_white:
         for (let i = 1; i <= 7; i++) {
-          f1 = (x + i).toString() + y.toString();
-          f2 = (x - i).toString() + y.toString();
-          f3 = (x).toString() + (y + i).toString();
-          f4 = (x).toString() + (y - i).toString();
-          f5 = (x + i).toString() + (y + i).toString();
-          f6 = (x + i).toString() + (y - i).toString();
-          f7 = (x - i).toString() + (y + i).toString();
-          f8 = (x - i).toString() + (y - i).toString();
-
           if (f1_prev === true) {
+            f1 = (x + i).toString() + y.toString();
             if (isValidField(f1)) {
               possibleFields.push(f1)
             } else {
@@ -296,6 +288,7 @@ function App() {
             }
           }
           if (f2_prev === true) {
+            f2 = (x - i).toString() + y.toString();
             if (isValidField(f2)) {
               possibleFields.push(f2)
             } else {
@@ -303,6 +296,7 @@ function App() {
             }
           }
           if (f3_prev === true) {
+            f3 = (x).toString() + (y + i).toString();
             if (isValidField(f3)) {
               possibleFields.push(f3)
             } else {
@@ -310,6 +304,7 @@ function App() {
             }
           }
           if (f4_prev === true) {
+            f4 = (x).toString() + (y - i).toString();
             if (isValidField(f4)) {
               possibleFields.push(f4)
             } else {
@@ -317,6 +312,7 @@ function App() {
             }
           }
           if (f5_prev === true) {
+            f5 = (x + i).toString() + (y + i).toString();
             if (isValidField(f5)) {
               possibleFields.push(f5);
             } else {
@@ -325,6 +321,7 @@ function App() {
           }
 
           if (f6_prev === true) {
+            f6 = (x + i).toString() + (y - i).toString();
             if (isValidField(f6)) {
               possibleFields.push(f6);
             } else {
@@ -333,6 +330,7 @@ function App() {
           }
 
           if (f7_prev === true) {
+            f7 = (x - i).toString() + (y + i).toString();
             if (isValidField(f7)) {
               possibleFields.push(f7);
             } else {
@@ -341,6 +339,7 @@ function App() {
           }
 
           if (f8_prev === true) {
+            f8 = (x - i).toString() + (y - i).toString();
             if (isValidField(f8)) {
               possibleFields.push(f8);
             } else {
