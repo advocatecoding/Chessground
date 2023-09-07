@@ -87,6 +87,15 @@ function App() {
     let f7_prev = true
     let f8_prev = true
 
+    let f1_prevT = true
+    let f2_prevT = true
+    let f3_prevT = true
+    let f4_prevT = true
+    let f5_prevT = true
+    let f6_prevT = true
+    let f7_prevT = true
+    let f8_prevT = true
+
     switch (fields[field]) {
       case pawn_white:
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
@@ -169,33 +178,37 @@ function App() {
         // iteration durch 7 weil nur 7 maximal gelaufen werden können
         for (let i = 1; i <= 7; i++) {
           // 1 nach rechts 1 nach oben usw.
-          f1 = (x + i).toString() + (y + i).toString();
-          f2 = (x + i).toString() + (y - i).toString();
-          f3 = (x - i).toString() + (y + i).toString();
-          f4 = (x - i).toString() + (y - i).toString();
-
-          if (f1_prev === true) {
+          if (f1_prev === true && f1_prevT === true) {
+            f1 = (x + i).toString() + (y + i).toString();
+            f1_prevT = isTakeableField(f1)
             if (isValidField(f1)) {
               possibleFields.push(f1)
             } else {
               f1_prev = false
             }
           }
-          if (f2_prev === true) {
+          if (f2_prev === true && f2_prevT === true) {
+            f2 = (x + i).toString() + (y - i).toString();
+            //console.log("Feldname:", squareNames[f2])
+            f2_prevT = isTakeableField(f2)
             if (isValidField(f2)) {
               possibleFields.push(f2)
             } else {
               f2_prev = false
             }
           }
-          if (f3_prev === true) {
+          if (f3_prev === true && f3_prevT === true) {
+            f3 = (x - i).toString() + (y + i).toString();
+            f3_prevT = isTakeableField(f3)
             if (isValidField(f3)) {
               possibleFields.push(f3)
             } else {
               f3_prev = false
             }
           }
-          if (f4_prev === true) {
+          if (f4_prev === true && f4_prevT === true) {
+            f4 = (x - i).toString() + (y - i).toString();
+            f4_prevT = isTakeableField(f4)
             if (isValidField(f4)) {
               possibleFields.push(f4)
             } else {
@@ -209,32 +222,36 @@ function App() {
       case rook_white:
         for (let i = 1; i <= 7; i++) {
           // 1 nach rechts 1 nach oben usw.
-          f1 = (x + i).toString() + y.toString();
-          f2 = (x - i).toString() + y.toString();
-          f3 = (x).toString() + (y + i).toString();
-          f4 = (x).toString() + (y - i).toString();
-          if (f1_prev === true) {
+          if (f1_prev === true && f1_prevT === true) {
+            f1 = (x + i).toString() + y.toString();
+            f1_prevT = isTakeableField(f1)
             if (isValidField(f1)) {
               possibleFields.push(f1)
             } else {
               f1_prev = false
             }
           }
-          if (f2_prev === true) {
+          if (f2_prev === true && f2_prevT === true) {
+            f2 = (x - i).toString() + y.toString();
+            f2_prevT = isTakeableField(f2)
             if (isValidField(f2)) {
               possibleFields.push(f2)
             } else {
               f2_prev = false
             }
           }
-          if (f3_prev === true) {
+          if (f3_prev === true && f3_prevT === true) {
+            f3 = (x).toString() + (y + i).toString();
+            f3_prevT = isTakeableField(f3)
             if (isValidField(f3)) {
               possibleFields.push(f3)
             } else {
               f3_prev = false
             }
           }
-          if (f4_prev === true) {
+          if (f4_prev === true && f4_prevT === true) {
+            f4 = (x).toString() + (y - i).toString();
+            f4_prevT = isTakeableField(f4)
             if (isValidField(f4)) {
               possibleFields.push(f4)
             } else {
@@ -279,40 +296,45 @@ function App() {
       case queen_black:
       case queen_white:
         for (let i = 1; i <= 7; i++) {
-          if (f1_prev === true) {
+          if (f1_prev === true && f1_prevT === true) {
             f1 = (x + i).toString() + y.toString();
+            f1_prevT = isTakeableField(f1)
             if (isValidField(f1)) {
               possibleFields.push(f1)
             } else {
               f1_prev = false
             }
           }
-          if (f2_prev === true) {
+          if (f2_prev === true && f2_prevT === true) {
             f2 = (x - i).toString() + y.toString();
+            f2_prevT = isTakeableField(f2)
             if (isValidField(f2)) {
               possibleFields.push(f2)
             } else {
               f2_prev = false
             }
           }
-          if (f3_prev === true) {
+          if (f3_prev === true && f3_prevT === true) {
             f3 = (x).toString() + (y + i).toString();
+            f3_prevT = isTakeableField(f3)
             if (isValidField(f3)) {
               possibleFields.push(f3)
             } else {
               f3_prev = false
             }
           }
-          if (f4_prev === true) {
+          if (f4_prev === true && f4_prevT === true) {
             f4 = (x).toString() + (y - i).toString();
+            f4_prevT = isTakeableField(f4)
             if (isValidField(f4)) {
               possibleFields.push(f4)
             } else {
               f4_prev = false
             }
           }
-          if (f5_prev === true) {
+          if (f5_prev === true && f5_prevT === true) {
             f5 = (x + i).toString() + (y + i).toString();
+            f5_prevT = isTakeableField(f5)
             if (isValidField(f5)) {
               possibleFields.push(f5);
             } else {
@@ -320,8 +342,9 @@ function App() {
             }
           }
 
-          if (f6_prev === true) {
+          if (f6_prev === true && f6_prevT === true) {
             f6 = (x + i).toString() + (y - i).toString();
+            f6_prevT = isTakeableField(f6)
             if (isValidField(f6)) {
               possibleFields.push(f6);
             } else {
@@ -329,8 +352,9 @@ function App() {
             }
           }
 
-          if (f7_prev === true) {
+          if (f7_prev === true && f7_prevT === true) {
             f7 = (x - i).toString() + (y + i).toString();
+            f7_prevT = isTakeableField(f7)
             if (isValidField(f7)) {
               possibleFields.push(f7);
             } else {
@@ -338,8 +362,9 @@ function App() {
             }
           }
 
-          if (f8_prev === true) {
+          if (f8_prev === true && f8_prevT === true) {
             f8 = (x - i).toString() + (y - i).toString();
+            f8_prevT = isTakeableField(f8)
             if (isValidField(f8)) {
               possibleFields.push(f8);
             } else {
@@ -354,6 +379,24 @@ function App() {
         break;
     }
   }
+
+
+  const isTakeableField = (field) => {
+    // weiß
+    if (turn % 2 === 0) {
+      if (blackPieces.includes(fields[field])) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      if (whitePieces.includes(fields[field])) {
+        return false
+      } else {
+        return true
+      }
+    }
+  } 
 
   const isValidField = (field) => {
     const fieldKeys = Object.keys(squareNames).map(Number);
@@ -387,7 +430,7 @@ function App() {
 
 
   const handleClick = (field) => {
-    console.log(field)
+    console.log("geklicktes Feld:", field)
 
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
@@ -444,7 +487,6 @@ function App() {
         showMovableFields(field)
         setSelectPiece(true)
         setCurrentField(field)
-        //console.log("Figur ausgewählt", field)
       } else {
         return
       }
@@ -468,19 +510,17 @@ function App() {
         }
       }
      
-
+      
       console.log("wird bewegt nach", squareNames[newField])
 
       // Zugreihenfolge 
       var playedMove = ""
       if (turn % 2 === 0) {
-        console.log("turn = 1")
         playedMove = squareNames[newField] + ""
       } else {
         playedMove = " " + squareNames[newField]
       }
       setMoves([...moves, playedMove])
-      console.log(moves)
 
 
       // Neuer Field wird mit der ausgewählten Figur besetzt
