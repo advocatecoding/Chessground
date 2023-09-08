@@ -20,7 +20,7 @@ import {
 } from './data/fields';
 import fieldsData from './data/fields';
 // Audioimport
-import { moveAudio, captureAudio, castleAudio  } from './data/fields';
+import { moveAudio, captureAudio, castleAudio } from './data/fields';
 
 
 function App() {
@@ -58,6 +58,11 @@ function App() {
   const [pieceIsSelected, setSelectPiece] = useState(false);
   // Welche Figur ist grad ausgewählt?
   const [currentField, setCurrentField] = useState(null);
+
+  // Wenn Schach gesetzt wird
+  const [whiteIsChecked, setWhiteIsChecked] = useState(false)
+
+  const [blackIsChecked, setBlackIsChecked] = useState(false)
 
   // Züge werden gespeichert
   const [moves, setMoves] = useState([]);
@@ -284,21 +289,21 @@ function App() {
         if (turn % 2 === 0) {
           // castle short with white
           if (cur_field === "51" && fields[81] === rook_white && fields[61] === undefined && fields[71] === undefined) {
-              possibleFields.push("71")
+            possibleFields.push("71")
           }
           // castle long with white
           if (cur_field === "51" && fields[11] === rook_white && fields[21] === undefined && fields[31] === undefined && fields[41] === undefined) {
-              possibleFields.push("31")
+            possibleFields.push("31")
           }
         } else {
           // castle short with black
           if (cur_field === "58" && fields[88] === rook_black && fields[68] === undefined && fields[78] === undefined) {
             possibleFields.push("78")
-        }
-        // castle long with black
-        if (cur_field === "58" && fields[88] === rook_black && fields[28] === undefined && fields[38] === undefined && fields[48] === undefined) {
-          possibleFields.push("38")
-      }
+          }
+          // castle long with black
+          if (cur_field === "58" && fields[88] === rook_black && fields[28] === undefined && fields[38] === undefined && fields[48] === undefined) {
+            possibleFields.push("38")
+          }
         }
         highlightMovableFields(possibleFields)
         break;
@@ -405,7 +410,7 @@ function App() {
         return true
       }
     }
-  } 
+  }
 
   const isValidField = (field) => {
     const fieldKeys = Object.keys(squareNames).map(Number);
@@ -434,12 +439,8 @@ function App() {
     }
   };
 
-
-
-
-
   const handleClick = (field) => {
-    console.log("geklicktes Feld:", field)
+    console.log("geklicktes Feld:", squareNames[field])
 
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
@@ -518,8 +519,8 @@ function App() {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
-     
-      
+
+
       console.log("wird bewegt nach", squareNames[newField])
 
       // Zugreihenfolge 
@@ -537,28 +538,28 @@ function App() {
       // Das davorige Feld wird leer, also undefined gesetzt
       fields[currentField] = undefined
 
-      
+
       // Rochade prüfen => Der Rook muss sich auch bewegen
       // Wir prüfen vorher bei showMovableFields ob eine Rochade überhaupt möglich ist
       // Hier muss nur noch der Rook mitbewegt werden
       if (turn % 2 === 0) {
-      if (currentField === "51" && newField === "71") {
-        // castle short white
-        fields["61"] = rook_white
-        fields["81"] = undefined
-        
-        castleSound.play()
-        
-      }else if (currentField === "51" && newField === "31") {
-        // castle long white
-        fields["41"] = rook_white
-        fields["11"] = undefined
-        castleSound.play()
-      }  
-      else {
-         // Normaler Zug Sound
-        moveSound.play();
-      } 
+        if (currentField === "51" && newField === "71") {
+          // castle short white
+          fields["61"] = rook_white
+          fields["81"] = undefined
+
+          castleSound.play()
+
+        } else if (currentField === "51" && newField === "31") {
+          // castle long white
+          fields["41"] = rook_white
+          fields["11"] = undefined
+          castleSound.play()
+        }
+        else {
+          // Normaler Zug Sound
+          moveSound.play();
+        }
       } else {
         // castle short
         if (currentField === "58" && newField === "78") {
@@ -582,13 +583,37 @@ function App() {
       resetHighlights()
       setTurn(turn + 1)
       setIsBoardRotated(!isBoardRotated)
+
+      console.log("aktuelles Figur", fields[newField])
+      console.log("aktuelles Feld", newField)
+      
+      // Prüfen ob Schach gesetzt wurde
+      isChecked()
     }
   }
 
+  const isChecked = () => {
+    let kingField = null
+    // Feld des Königs ermitteln
+    for (const whiteKingField in fields) {
+      if (fields[whiteKingField] === king_white) {
+        kingField = whiteKingField       
+        break; 
+      }
+    }
+
+    // Prüfen ob die Königsfigur im nächsten Zug von IRGENDEINER Figur 
+    //geschlagen werden kann (! nicht nur von der angreifenden Figur)
+
+  }
+
+
   const newGame = () => {
-    setFields(fieldsData)
+    
     setTurn(2)
-    console.log("new Game")
+    setFields(fieldsData)
+    console.log("new Gam")
+    //jsakdn
   }
 
 
@@ -626,44 +651,41 @@ function App() {
       {/** Feld */}
       <div className={`relative grid-cols-8 inline-grid m-auto ${isBoardRotated ? 'rotate-board' : ''}`}>
         {cordY.map((number) => {
-          if (number % 2 === 0) {
-            return cordX.map((letter, index) => {
-              let color = ((index) % 2 === 0) ? "bg-teal-900" : "bg-white"
-              return (<div className={` field ${color}`} id={`${letter}${number}`}
+          return cordX.map((letter, index) => {
+            let color, rotation;
+            if (number % 2 === 0) {
+              color = (index % 2 === 0) ? "bg-teal-900" : "bg-white";
+              rotation = isBoardRotated ? "rotate(180deg)" : "";
+            } else {
+              color = (index % 2 === 0) ? "bg-white" : "bg-teal-900";
+              rotation = isBoardRotated ? "rotate(180deg)" : "";
+            }
+            return (  
+              <div
+                className={`field ${color}`}
+                id={`${letter}${number}`}
                 style={{
-                  backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
+                  backgroundImage: `url(${fields[`${letter}${number}`]})`,
                   backgroundSize: "cover",
                   cursor: "pointer",
-                  transform: isBoardRotated ? "rotate(180deg)" : null
+                  transform: rotation // Hier wird die Rotation angewendet
                 }}
-                onClick={() => handleClick(`${letter}${number}`)}>
-              </div>)
-            })
-          } else {
-            return cordX.map((letter, index) => {
-              let color = ((index) % 2 === 0) ? "bg-white" : "bg-teal-900"
-              return (<div className={` field ${color}`} id={`${letter}${number}`}
-                style={{
-                  backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
-                  backgroundSize: "cover", cursor: "pointer",
-                  transform: isBoardRotated ? "rotate(180deg)" : null
-                }}
-                onClick={() => handleClick(`${letter}${number}`)}>
-              </div>)
-            })
-          }
-        })
-        }
+                onClick={() => handleClick(`${letter}${number}`)}
+              ></div>
+            );
+          });
+        })}
+
 
         {/** Geschlagene Figuren am Rand anzeigen */}
         <div className='absolute bottom-0 flex flex-col-reverse -left-10' >
           {
             blackPiecesTaken.map((piece) => {
               return <img
-              style={{
-                transform: isBoardRotated ? "rotate(180deg)" : null
-              }} 
-              alt='taken_piece_black' className='w-8' src={piece}></img>
+                style={{
+                  transform: isBoardRotated ? "rotate(180deg)" : null
+                }}
+                alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
@@ -671,11 +693,11 @@ function App() {
         <div className='absolute top-0 flex flex-col-reverse -left-10' >
           {
             whitePiecesTaken.map((piece) => {
-              return <img 
-              style={{
-                transform: isBoardRotated ? "rotate(180deg)" : null
-              }} 
-              alt='taken_piece_black' className='w-8' src={piece}></img>
+              return <img
+                style={{
+                  transform: isBoardRotated ? "rotate(180deg)" : null
+                }}
+                alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
