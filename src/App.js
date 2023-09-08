@@ -279,17 +279,26 @@ function App() {
           if (isValidField(f3)) possibleFields.push(f3);
           if (isValidField(f4)) possibleFields.push(f4);
         }
-        // Rochademöglichkeit prüfen
+        // Check castling possibility prüfen
         let cur_field = x.toString() + y.toString()
         if (turn % 2 === 0) {
-          // wenn Weiß
-          if (cur_field === "51" && fields[81] === rook_white) {
+          // castle short with white
+          if (cur_field === "51" && fields[81] === rook_white && fields[61] === undefined && fields[71] === undefined) {
               possibleFields.push("71")
           }
+          // castle long with white
+          if (cur_field === "51" && fields[11] === rook_white && fields[21] === undefined && fields[31] === undefined && fields[41] === undefined) {
+              possibleFields.push("31")
+          }
         } else {
-          if (cur_field === "58" && fields[88] === rook_black) {
+          // castle short with black
+          if (cur_field === "58" && fields[88] === rook_black && fields[68] === undefined && fields[78] === undefined) {
             possibleFields.push("78")
         }
+        // castle long with black
+        if (cur_field === "58" && fields[88] === rook_black && fields[28] === undefined && fields[38] === undefined && fields[48] === undefined) {
+          possibleFields.push("38")
+      }
         }
         highlightMovableFields(possibleFields)
         break;
@@ -534,19 +543,31 @@ function App() {
       // Hier muss nur noch der Rook mitbewegt werden
       if (turn % 2 === 0) {
       if (currentField === "51" && newField === "71") {
+        // castle short white
         fields["61"] = rook_white
         fields["81"] = undefined
         
         castleSound.play()
         
-      } else {
+      }else if (currentField === "51" && newField === "31") {
+        // castle long white
+        fields["41"] = rook_white
+        fields["11"] = undefined
+        castleSound.play()
+      }  
+      else {
          // Normaler Zug Sound
         moveSound.play();
       } 
       } else {
+        // castle short
         if (currentField === "58" && newField === "78") {
           fields["68"] = rook_black
           fields["88"] = undefined
+          castleSound.play()
+        } else if (currentField === "58" && newField === "38") {
+          fields["48"] = rook_black
+          fields["18"] = undefined
           castleSound.play()
         }
         else {
