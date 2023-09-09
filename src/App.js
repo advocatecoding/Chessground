@@ -1,5 +1,5 @@
 import './input.css';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import squareNames from './data/squareName';
 import {
   rook_white,
@@ -20,7 +20,7 @@ import {
 } from './data/fields';
 import fieldsData from './data/fields';
 // Audioimport
-import { moveAudio, captureAudio, castleAudio  } from './data/fields';
+import { moveAudio, captureAudio, castleAudio } from './data/fields';
 
 
 function App() {
@@ -32,6 +32,11 @@ function App() {
 
   // Rotation des Bretts
   const [isBoardRotated, setIsBoardRotated] = useState(false);
+  // ohne useState
+  // var isBoardRotatedVar = false
+  // function setIsBoardRotatedVar(bool) {
+  //   isBoardRotatedVar = bool
+  // }
 
   const cordY = [8, 7, 6, 5, 4, 3, 2, 1];
 
@@ -55,12 +60,20 @@ function App() {
   const [fields, setFields] = useState(fieldsData)
 
   // Ist eine Figur ausgewählt?
-  const [pieceIsSelected, setSelectPiece] = useState(false);
+  const [pieceIsSelected, setSelectPiece] = useState(false)
+
   // Welche Figur ist grad ausgewählt?
-  const [currentField, setCurrentField] = useState(null);
+  const [currentField, setCurrentField] = useState(null)
 
   // Züge werden gespeichert
-  const [moves, setMoves] = useState([]);
+  const [moves, setMoves] = useState([])
+
+  // drag drop
+  // doubleRenderFix = useRef(false)
+
+  const [mouseDown, setMouseDown] = useState(false)
+
+
 
   const showMovableFields = (field) => {
     var possibleFields = []
@@ -267,12 +280,12 @@ function App() {
         if (turn % 2 === 0) {
           // wenn Weiß
           if (cur_field === "51" && fields[81] === rook_white) {
-              possibleFields.push("71")
+            possibleFields.push("71")
           }
         } else {
           if (cur_field === "58" && fields[88] === rook_black) {
             possibleFields.push("78")
-        }
+          }
         }
         highlightMovableFields(possibleFields)
         break;
@@ -387,7 +400,7 @@ function App() {
 
 
   const handleClick = (field) => {
-    console.log(field)
+    // console.log(field)
 
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
@@ -431,13 +444,10 @@ function App() {
     if (turn % 2 === 0) {
       // Prüfen ob auch eine weiße Figur ausgewählt wurde
       if (whitePieces.includes(fields[field])) {
-        //movePiece(field)
         showMovableFields(field)
         setSelectPiece(true)
         setCurrentField(field)
-      } else {
-        return
-      }
+      } else return
     } else {
       if (blackPieces.includes(fields[field])) {
         //movePiece(field)
@@ -445,14 +455,13 @@ function App() {
         setSelectPiece(true)
         setCurrentField(field)
         //console.log("Figur ausgewählt", field)
-      } else {
-        return
-      }
+      } else return
     }
   }
 
   const movePiece = (newField) => {
     // Prüfen ob der zu bewegende Square besetzbar ist von der aktuellen Figur 
+    // console.log('piece can be place here:', curMovableFields.includes(newField))
     if (curMovableFields.includes(newField)) {
       // Geschlagene Figur speichern in der geschlagenen Liste
       const takenPiece = fields[newField]
@@ -467,20 +476,20 @@ function App() {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
-     
 
-      console.log("wird bewegt nach", squareNames[newField])
+
+      // console.log("wird bewegt nach", squareNames[newField])
 
       // Zugreihenfolge 
       var playedMove = ""
       if (turn % 2 === 0) {
-        console.log("turn = 1")
+        // console.log("turn = 1")
         playedMove = squareNames[newField] + ""
       } else {
         playedMove = " " + squareNames[newField]
       }
       setMoves([...moves, playedMove])
-      console.log(moves)
+      // console.log(moves)
 
 
       // Neuer Field wird mit der ausgewählten Figur besetzt
@@ -488,21 +497,21 @@ function App() {
       // Das davorige Feld wird leer, also undefined gesetzt
       fields[currentField] = undefined
 
-      
+
       // Rochade prüfen => Der Rook muss sich auch bewegen
       // Wir prüfen vorher bei showMovableFields ob eine Rochade überhaupt möglich ist
       // Hier muss nur noch der Rook mitbewegt werden
       if (turn % 2 === 0) {
-      if (currentField === "51" && newField === "71") {
-        fields["61"] = rook_white
-        fields["81"] = undefined
-        
-        castleSound.play()
-        
-      } else {
-         // Normaler Zug Sound
-        moveSound.play();
-      } 
+        if (currentField === "51" && newField === "71") {
+          fields["61"] = rook_white
+          fields["81"] = undefined
+
+          castleSound.play()
+
+        } else {
+          // Normaler Zug Sound
+          moveSound.play();
+        }
       } else {
         if (currentField === "58" && newField === "78") {
           fields["68"] = rook_black
@@ -532,10 +541,95 @@ function App() {
 
 
 
+
+  // ▬▬▬ ABLAUF ▬▬▬ //
+  // 1. bei mousedown soll das moveset von der spielfigur auf dem Feld angezeigt werden
+  // -> click handler wird für momentanes feld getriggert
+
+  // 2. Figur soll der Mouse folgen
+  // -> div mit absolute positioning, welcher top und left Werte je nach position im grid erhält
+  // ! isBoardRotated returnt momentan immer false, daher funktioniert der follow gerade nur bei weiß
+  // * queryselector falsch -> useRef richtiger ansatz ... fuck
+
+  // 3.
+  // -> 
+
+  // 4.
+  // -> 
+
+  // 5.
+  // -> 
+
+
+  // drag drop feature AL-Original
+  const pieceFollow = useRef(null);
+  const fieldsGrid = useRef(null);
+
+  const mouseDownCB = (event) => {
+    // event.preventDefault()
+    console.log(event.type)
+    setMouseDown(true)
+    event.target.click()
+  }
+  
+  const mouseUpCB = (event) => {
+    console.log(event.type)
+    setMouseDown(false)
+    event.target.click()
+  }
+
+  const mouseEnterCB = (event) => {
+    if (!mouseDown) return
+
+    // checke, ob Figur sich ins Feld bewegen kann...
+    var highlighted = false
+    const field = event.target
+    for (const child of field.children) {
+      if (!highlighted && child.classList.contains('highlighter')) highlighted = true
+    }
+
+    // ... wenn ja, soll Feld grünlich markiert werden ...
+    if (highlighted) {
+      field.classList.add('valid-move')
+    } 
+    // ansonsten rötlich
+    else {
+      field.classList.add('invalid-move')
+    }
+  }
+
+  const mouseLeaveCB = (event) => {
+    console.log('left', event.target)
+    const fieldClasses = event.target.classList
+    // console.log(fieldClasses.contains('valid-move'))
+    // console.log(fieldClasses.contains('invalid-move'))
+    fieldClasses.remove('valid-move')
+    fieldClasses.remove('invalid-move')
+  }
+
+  const GridLeaveCB = () => {
+    setMouseDown(false)
+  }
+
+  const MouseMoveCB = (event) => {
+    console.log(mouseDown, event.type, event)
+    if (!mouseDown) return
+
+    let fieldsGridOffset = fieldsGrid.current.getBoundingClientRect()
+    let y = event.clientY - fieldsGridOffset.y
+    let x = event.clientX - fieldsGridOffset.x
+    let newY = isBoardRotated ? fieldsGrid.current.offsetHeight - y : y
+    let newX = isBoardRotated ? fieldsGrid.current.offsetWidth - x : x
+
+    pieceFollow.current.style.top = `${newY}px`
+    pieceFollow.current.style.left = `${newX}px`
+  }
+
+
+
   return (
     <>
       {/** Wer ist an der Reihe?*/}
-
       <div className='absolute right-8 bottom-8 h-16 w-16 flex flex-wrap content-center justify-center text-4xl'
         style={turn % 2 !== 0 ? { backgroundColor: "black", color: "white" } : { backgroundColor: "white", color: "black" }}>
         <p>
@@ -562,20 +656,35 @@ function App() {
         </button>
       </div>
 
+
       {/** Feld */}
-      <div className={`relative grid-cols-8 inline-grid m-auto ${isBoardRotated ? 'rotate-board' : ''}`}>
+      <div className={`fields relative grid-cols-8 inline-grid m-auto ${isBoardRotated ? 'rotate-board' : ''}`}
+      ref={fieldsGrid}
+      onMouseMove={MouseMoveCB}
+      onTouchMove={MouseMoveCB}
+      onMouseLeave={GridLeaveCB}
+      >
         {cordY.map((number) => {
           if (number % 2 === 0) {
             return cordX.map((letter, index) => {
               let color = ((index) % 2 === 0) ? "bg-teal-900" : "bg-white"
-              return (<div className={` field ${color}`} id={`${letter}${number}`}
+              return (<div className={`field ${color}`} id={`${letter}${number}`}
                 style={{
                   backgroundImage: "url(" + fields[`${letter}${number}`] + ")",
                   backgroundSize: "cover",
                   cursor: "pointer",
                   transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
-                onClick={() => handleClick(`${letter}${number}`)}>
+                onClick={() => handleClick(`${letter}${number}`)}
+                onMouseDown={mouseDownCB}
+                onTouchStart={mouseDownCB}
+
+                onMouseUp={mouseUpCB}
+                onTouchEnd={mouseUpCB}
+
+                onMouseEnter={mouseEnterCB}
+                onMouseLeave={mouseLeaveCB}
+              >
               </div>)
             })
           } else {
@@ -587,22 +696,42 @@ function App() {
                   backgroundSize: "cover", cursor: "pointer",
                   transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
-                onClick={() => handleClick(`${letter}${number}`)}>
+                onClick={() => handleClick(`${letter}${number}`)}
+                onMouseDown={mouseDownCB}
+                onTouchStart={mouseDownCB}
+
+                onMouseUp={mouseUpCB}
+                onTouchEnd={mouseUpCB}
+
+                onMouseEnter={mouseEnterCB}
+                onMouseLeave={mouseLeaveCB}
+              >
               </div>)
             })
           }
-        })
-        }
+        })}
+
+
+        {/** drag and drop effect */}
+        <div className={`piece-follow absolute top-0 bottom-0 w-24 h-24 bg-transparent -translate-x-[50%] -translate-y-[50%] place-items-center flex pointer-events-none bg-cover ${isBoardRotated ? 'rotate-180' : ''}`}
+          style={{
+            backgroundImage: 'url(' + fields[currentField] + ')',
+            top: 0,
+            left: 0
+          }}
+          ref={pieceFollow}
+          ></div>
+
 
         {/** Geschlagene Figuren am Rand anzeigen */}
         <div className='absolute bottom-0 flex flex-col-reverse -left-10' >
           {
             blackPiecesTaken.map((piece) => {
               return <img
-              style={{
-                transform: isBoardRotated ? "rotate(180deg)" : null
-              }} 
-              alt='taken_piece_black' className='w-8' src={piece}></img>
+                style={{
+                  transform: isBoardRotated ? "rotate(180deg)" : null
+                }}
+                alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
@@ -610,11 +739,11 @@ function App() {
         <div className='absolute top-0 flex flex-col-reverse -left-10' >
           {
             whitePiecesTaken.map((piece) => {
-              return <img 
-              style={{
-                transform: isBoardRotated ? "rotate(180deg)" : null
-              }} 
-              alt='taken_piece_black' className='w-8' src={piece}></img>
+              return <img
+                style={{
+                  transform: isBoardRotated ? "rotate(180deg)" : null
+                }}
+                alt='taken_piece_black' className='w-8' src={piece}></img>
             })
           }
         </div>
