@@ -20,7 +20,7 @@ import {
 } from './data/fields';
 import fieldsData from './data/fields';
 // Audioimport
-import { moveAudio, captureAudio, castleAudio } from './data/fields';
+import { moveAudio, captureAudio, castleAudio, checkAudio } from './data/fields';
 
 
 function App() {
@@ -29,6 +29,7 @@ function App() {
   const moveSound = new Audio(moveAudio);
   const captureSound = new Audio(captureAudio);
   const castleSound = new Audio(castleAudio);
+  const checkSound = new Audio(checkAudio);
 
   // Rotation des Bretts
   const [isBoardRotated, setIsBoardRotated] = useState(false);
@@ -60,14 +61,24 @@ function App() {
   const [currentField, setCurrentField] = useState(null);
 
   // Wenn Schach gesetzt wird
-  const [whiteIsChecked, setWhiteIsChecked] = useState(false)
 
-  const [blackIsChecked, setBlackIsChecked] = useState(false)
+  //const [whiteIsChecked, setWhiteIsChecked] = useState(false);
+  //const [blackIsChecked, setBlackIsChecked] = useState(false);
+
+
+  // Die aktuelle Position des schwarzen oder weißen Königs 
+  const [kingPosition, setKingPosition] = useState("")
 
   // Züge werden gespeichert
   const [moves, setMoves] = useState([]);
 
-  const showMovableFields = (field) => {
+
+  var whiteIsChecked = false
+  var blackIsChecked = false
+
+
+
+  const showMovableFields = (field, highlight = true) => {
     var possibleFields = []
 
     // X und Y sind die aktuelle Position
@@ -128,7 +139,7 @@ function App() {
         }
 
 
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
 
       case pawn_black:
@@ -155,7 +166,7 @@ function App() {
         if (whitePieces.includes(fields[f4])) {
           possibleFields.push(f4)
         }
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
 
       case knight_white:
@@ -175,7 +186,7 @@ function App() {
         for (let i = 0; i < possibleMoves.length; i++) {
           if (isValidField(possibleMoves[i])) possibleFields.push(possibleMoves[i]);
         }
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
       case bishop_white:
       case bishop_black:
@@ -194,7 +205,6 @@ function App() {
           }
           if (f2_prev === true && f2_prevT === true) {
             f2 = (x + i).toString() + (y - i).toString();
-            //console.log("Feldname:", squareNames[f2])
             f2_prevT = isTakeableField(f2)
             if (isValidField(f2)) {
               possibleFields.push(f2)
@@ -221,7 +231,7 @@ function App() {
             }
           }
         }
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
       case rook_black:
       case rook_white:
@@ -264,7 +274,7 @@ function App() {
             }
           }
         }
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
       case king_black:
       case king_white:
@@ -305,7 +315,7 @@ function App() {
             possibleFields.push("38")
           }
         }
-        highlightMovableFields(possibleFields)
+        //highlightMovableFields(possibleFields)
         break;
       case queen_black:
       case queen_white:
@@ -387,10 +397,20 @@ function App() {
           }
 
         }
-        highlightMovableFields(possibleFields)
+
         break;
       default:
         break;
+    }
+    if (highlight) {
+      highlightMovableFields(possibleFields)
+    } else {
+      // Prüfen ob die möglichen Felder den König angreifen können
+      if (possibleFields.includes(kingPosition)){
+        return true;
+      }  else {
+        return false;
+      }
     }
   }
 
@@ -440,7 +460,7 @@ function App() {
   };
 
   const handleClick = (field) => {
-    console.log("geklicktes Feld:", squareNames[field])
+    //console.log("geklicktes Feld:", field)
 
     // Prüfen ob noch keine Figur ausgewählt ist
     if (!pieceIsSelected) {
@@ -519,10 +539,7 @@ function App() {
           setWhitePiecesTaken([...whitePiecesTaken, takenPiece])
         }
       }
-
-
-      console.log("wird bewegt nach", squareNames[newField])
-
+    
       // Zugreihenfolge 
       var playedMove = ""
       if (turn % 2 === 0) {
@@ -538,44 +555,63 @@ function App() {
       // Das davorige Feld wird leer, also undefined gesetzt
       fields[currentField] = undefined
 
+      var castled = false
+
+
+      if (turn % 2 === 0) {
+        if (fields[newField] === king_white && currentField === "51" && newField === "71") {
+          // castle short white
+          fields["61"] = rook_white
+          fields["81"] = undefined
+          castled = true
+
+        } else if ((fields[newField] === king_white) && currentField === "51" && newField === "31") {
+          // castle long white
+          fields["41"] = rook_white
+          fields["11"] = undefined
+          castled = true
+        }
+      } else {
+        // castle short
+        if (fields[newField] === king_black && currentField === "58" && newField === "78") {
+          fields["68"] = rook_black
+          fields["88"] = undefined
+          castled = true
+        } else if (fields[newField] === king_black && currentField === "58" && newField === "38") {
+          // castle long black
+          fields["48"] = rook_black
+          fields["18"] = undefined
+          castled = true
+        }
+      }
+
+      isChecked()
 
       // Rochade prüfen => Der Rook muss sich auch bewegen
       // Wir prüfen vorher bei showMovableFields ob eine Rochade überhaupt möglich ist
       // Hier muss nur noch der Rook mitbewegt werden
       if (turn % 2 === 0) {
-        if (currentField === "51" && newField === "71") {
-          // castle short white
-          fields["61"] = rook_white
-          fields["81"] = undefined
 
-          castleSound.play()
-
-        } else if (currentField === "51" && newField === "31") {
-          // castle long white
-          fields["41"] = rook_white
-          fields["11"] = undefined
-          castleSound.play()
+        if (blackIsChecked) {
+          checkSound.play()
         }
-        else {
+        else if (castled) {
+          castleSound.play()
+        } else {
           // Normaler Zug Sound
           moveSound.play();
         }
       } else {
-        // castle short
-        if (currentField === "58" && newField === "78") {
-          fields["68"] = rook_black
-          fields["88"] = undefined
+        // Während schwarz noch dran ist prüfen ob Weiß gecheckt wurde
+        if (whiteIsChecked) {
+          checkSound.play()
+        } else if (castled) {
           castleSound.play()
-        } else if (currentField === "58" && newField === "38") {
-          fields["48"] = rook_black
-          fields["18"] = undefined
-          castleSound.play()
-        }
-        else {
+        } else {
+          // Normaler Zug Sound
           moveSound.play();
         }
       }
-      //console.log("Curren piece", typeof(currentField))
 
       setFields({ ...fields })
       // Figur wird vom alten Field gelöscht 
@@ -584,24 +620,48 @@ function App() {
       setTurn(turn + 1)
       setIsBoardRotated(!isBoardRotated)
 
-      console.log("aktuelles Figur", fields[newField])
-      console.log("aktuelles Feld", newField)
-      
-      // Prüfen ob Schach gesetzt wurde
-      isChecked()
     }
   }
 
   const isChecked = () => {
-    let kingField = null
-    // Feld des Königs ermitteln
-    for (const whiteKingField in fields) {
-      if (fields[whiteKingField] === king_white) {
-        kingField = whiteKingField       
-        break; 
+    // Schwarz greift an 
+    if (turn % 2 === 0) {
+      // Feld des Königs ermitteln
+      for (const [field, piece] of Object.entries(fields)) {
+        if (piece === king_white) {
+          setKingPosition(field)
+          break;
+        }
+      }
+
+      for (const [field, piece] of Object.entries(fields)) {
+        if (whitePieces.includes(piece)) {
+          if (showMovableFields(field, false)){
+            //setBlackIsChecked(true); 
+            blackIsChecked = true
+            //checkSound.play()
+            break;
+          } 
+        }
+      }
+
+    } else {
+      for (const [field, piece] of Object.entries(fields))  {
+        if (piece === king_black) {
+          setKingPosition(field)
+          break;
+        }
+      }
+
+      for (const [field, piece] of Object.entries(fields)) {
+        if (blackPieces.includes(piece)) {
+          if (showMovableFields(field, false)){
+            whiteIsChecked = true
+            break;
+          }
+        }
       }
     }
-
     // Prüfen ob die Königsfigur im nächsten Zug von IRGENDEINER Figur 
     //geschlagen werden kann (! nicht nur von der angreifenden Figur)
 
@@ -609,7 +669,7 @@ function App() {
 
 
   const newGame = () => {
-    
+
     setTurn(2)
     setFields(fieldsData)
     console.log("new Gam")
@@ -660,7 +720,7 @@ function App() {
               color = (index % 2 === 0) ? "bg-white" : "bg-teal-900";
               rotation = isBoardRotated ? "rotate(180deg)" : "";
             }
-            return (  
+            return (
               <div
                 className={`field ${color}`}
                 id={`${letter}${number}`}
