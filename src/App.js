@@ -446,15 +446,15 @@ function App() {
     } else {
       // Prüfen ob die möglichen Felder den König angreifen können
       if (turn % 2 === 0) {
-          console.log("fields ü field", possibleFields, field)
-          if (testFields && possibleFields.includes(whiteKingPosition)) {
-            console.log("poss fields: ", possibleFields, "und das field: ", field)
-            return true;
-          } else if (possibleFields.includes(blackKingPosition)) {
-            return true;
-          } else {
-            return false
-          }
+        console.log("fields ü field", possibleFields, field)
+        if (testFields && possibleFields.includes(whiteKingPosition)) {
+          console.log("poss fields: ", possibleFields, "und das field: ", field)
+          return true;
+        } else if (possibleFields.includes(blackKingPosition)) {
+          return true;
+        } else {
+          return false
+        }
       } else {
         if (testFields && possibleFields.includes(blackKingPosition)) {
           return true;
@@ -764,7 +764,6 @@ function App() {
 
   const mouseDownCB = (event) => {
     if (event.type === 'mousedown') event.preventDefault()
-    console.log(event.type)
     setMouseDown(true)
     event.target.click()
 
@@ -772,11 +771,17 @@ function App() {
     let currentMoveTarget = document.querySelector('.move-target')
     if (currentMoveTarget) currentMoveTarget.classList.remove('move-target')
   }
-  
+
   const mouseUpCB = (event) => {
-    console.log(event.type)
     setMouseDown(false)
-    event.target.click()
+
+    if (event.type === 'touchend') {
+      document.elementFromPoint(
+        event.changedTouches[0].pageX,
+        event.changedTouches[0].pageY
+      ).click()
+    }
+    else event.target.click()
 
     pieceFollow.current.style.opacity = 0
     let currentMoveTarget = document.querySelector('.move-target')
@@ -796,7 +801,7 @@ function App() {
     // ... wenn ja, soll Feld grünlich markiert werden ...
     if (highlighted) {
       field.classList.add('valid-move')
-    } 
+    }
     // ansonsten rötlich
     else {
       field.classList.add('invalid-move')
@@ -804,10 +809,7 @@ function App() {
   }
 
   const mouseLeaveCB = (event) => {
-    console.log('left', event.target)
     const fieldClasses = event.target.classList
-    // console.log(fieldClasses.contains('valid-move'))
-    // console.log(fieldClasses.contains('invalid-move'))
     fieldClasses.remove('valid-move')
     fieldClasses.remove('invalid-move')
   }
@@ -818,11 +820,18 @@ function App() {
 
   const MouseMoveCB = (event) => {
     if (!mouseDown) return
-    // console.log(event.target)
-    // console.log(event.target.parentElement)
-    const field = event.target.tagName === 'IMG' ? event.target.parentElement : event.target
 
-    
+    let fieldTarget
+    if (event.type === 'touchmove') {
+      fieldTarget = document.elementFromPoint(
+        event.changedTouches[0].pageX,
+        event.changedTouches[0].pageY
+      )
+    } else fieldTarget = event.target
+    let field = fieldTarget.tagName === 'IMG' ? fieldTarget.parentElement : fieldTarget
+
+    console.log(field)
+
     // drag drop effect
     let fieldsGridOffset = fieldsGrid.current.getBoundingClientRect()
     let x, y
@@ -833,7 +842,7 @@ function App() {
       y = event.touches[0].clientY - fieldsGridOffset.y
       x = event.touches[0].clientX - fieldsGridOffset.x
     }
-    
+
     let newY = isBoardRotated ? fieldsGrid.current.offsetHeight - y : y
     let newX = isBoardRotated ? fieldsGrid.current.offsetWidth - x : x
     pieceFollow.current.style.top = `${newY}px`
@@ -881,10 +890,10 @@ function App() {
 
       {/** Feld */}
       <div className={`fields relative grid-cols-8 inline-grid m-auto ${isBoardRotated ? 'rotate-board' : ''}`}
-      ref={fieldsGrid}
-      onMouseMove={MouseMoveCB}
-      onTouchMove={MouseMoveCB}
-      onMouseLeave={GridLeaveCB}
+        ref={fieldsGrid}
+        onMouseMove={MouseMoveCB}
+        onTouchMove={MouseMoveCB}
+        onMouseLeave={GridLeaveCB}
       >
         {cordY.map((number) => {
           return cordX.map((letter, index) => {
@@ -907,7 +916,7 @@ function App() {
                   transform: rotation // Hier wird die Rotation angewendet
                 }}
                 onClick={() => handleClick(`${letter}${number}`)}
-                
+
                 onMouseDown={mouseDownCB}
                 onTouchStart={mouseDownCB}
 
@@ -922,14 +931,12 @@ function App() {
         {/** drag and drop effect */}
         <div className={`piece-follow absolute top-0 bottom-0 w-24 h-24 bg-transparent -translate-x-[50%] -translate-y-[50%] place-items-center flex pointer-events-none bg-cover ${isBoardRotated ? 'rotate-180' : ''}`}
           style={{
-            backgroundImage: 'url(' + fields[currentField] + ')',
-            top: 0,
-            left: 0
+            backgroundImage: 'url(' + fields[currentField] + ')'
           }}
           ref={pieceFollow}
-          ></div>
+        ></div>
 
-          
+
         {/** Geschlagene Figuren am Rand anzeigen */}
         <div className='absolute bottom-0 flex flex-col-reverse -left-10' >
           {

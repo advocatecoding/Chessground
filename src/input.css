@@ -58,6 +58,7 @@ body {
 
 
 @media only screen and (max-width: 600px) {
+    .piece-follow,
     .field {
         width: 2.5rem;
         height: 2.5rem;
