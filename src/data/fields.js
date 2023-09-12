@@ -20,6 +20,7 @@ export const  PUBLIC_URL = process.env.PUBLIC_URL;
  export const moveAudio = PUBLIC_URL + "/sounds/move.mp3"
  export const captureAudio = PUBLIC_URL + "/sounds/capture.mp3"
  export const castleAudio = PUBLIC_URL + "/sounds/castle.mp3"
+ export const checkAudio = PUBLIC_URL + "/sounds/check.mp3"
 
 const  fieldsData = {
     11: rook_white,
