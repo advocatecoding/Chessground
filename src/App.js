@@ -540,33 +540,12 @@ function App() {
   }
 
 
-
-
-  // ▬▬▬ ABLAUF ▬▬▬ //
-  // 1. bei mousedown soll das moveset von der spielfigur auf dem Feld angezeigt werden
-  // -> click handler wird für momentanes feld getriggert
-
-  // 2. Figur soll der Mouse folgen
-  // -> div mit absolute positioning, welcher top und left Werte je nach position im grid erhält
-  // ! isBoardRotated returnt momentan immer false, daher funktioniert der follow gerade nur bei weiß
-  // * queryselector falsch -> useRef richtiger ansatz ... fuck
-
-  // 3.
-  // -> 
-
-  // 4.
-  // -> 
-
-  // 5.
-  // -> 
-
-
   // drag drop feature AL-Original
   const pieceFollow = useRef(null);
   const fieldsGrid = useRef(null);
 
   const mouseDownCB = (event) => {
-    // event.preventDefault()
+    if (event.type === 'mousedown') event.preventDefault()
     console.log(event.type)
     setMouseDown(true)
     event.target.click()
@@ -612,17 +591,27 @@ function App() {
   }
 
   const MouseMoveCB = (event) => {
-    console.log(mouseDown, event.type, event)
     if (!mouseDown) return
-
+    
+    // drag drop effect
     let fieldsGridOffset = fieldsGrid.current.getBoundingClientRect()
-    let y = event.clientY - fieldsGridOffset.y
-    let x = event.clientX - fieldsGridOffset.x
+    let x, y
+    if (event.type === 'mousemove') {
+      y = event.clientY - fieldsGridOffset.y
+      x = event.clientX - fieldsGridOffset.x
+    } else if (event.type === 'touchmove') {
+      y = event.touches[0].clientY - fieldsGridOffset.y
+      x = event.touches[0].clientX - fieldsGridOffset.x
+    }
+    
     let newY = isBoardRotated ? fieldsGrid.current.offsetHeight - y : y
     let newX = isBoardRotated ? fieldsGrid.current.offsetWidth - x : x
-
     pieceFollow.current.style.top = `${newY}px`
     pieceFollow.current.style.left = `${newX}px`
+
+
+    // field marker
+    // TODO
   }
 
 
@@ -676,14 +665,15 @@ function App() {
                   transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
                 onClick={() => handleClick(`${letter}${number}`)}
+
                 onMouseDown={mouseDownCB}
                 onTouchStart={mouseDownCB}
 
                 onMouseUp={mouseUpCB}
                 onTouchEnd={mouseUpCB}
-
-                onMouseEnter={mouseEnterCB}
-                onMouseLeave={mouseLeaveCB}
+// 
+                // onMouseEnter={mouseEnterCB}
+                // onMouseLeave={mouseLeaveCB}
               >
               </div>)
             })
@@ -697,14 +687,15 @@ function App() {
                   transform: isBoardRotated ? "rotate(180deg)" : null
                 }}
                 onClick={() => handleClick(`${letter}${number}`)}
+
                 onMouseDown={mouseDownCB}
                 onTouchStart={mouseDownCB}
 
                 onMouseUp={mouseUpCB}
                 onTouchEnd={mouseUpCB}
 
-                onMouseEnter={mouseEnterCB}
-                onMouseLeave={mouseLeaveCB}
+                // onMouseEnter={mouseEnterCB}
+                // onMouseLeave={mouseLeaveCB}
               >
               </div>)
             })
