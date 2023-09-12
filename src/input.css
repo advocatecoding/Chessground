@@ -24,6 +24,13 @@ body {
     position: relative;
 }
 
+.field::after {
+    content: attr(id);
+    position: absolute;
+    top: 0;
+    left: .1rem;
+}
+
 /* feld unterscheidung - momentan nicht genutzt
 .valid-move::before {
     content: '';

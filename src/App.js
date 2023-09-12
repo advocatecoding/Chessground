@@ -102,7 +102,6 @@ function App() {
 
     if (testFields) {
       cur_fields = testFields;
-      //console.log("cur Fields: ",cur_fields);
     } else {
       cur_fields = fields
     }
@@ -121,7 +120,6 @@ function App() {
 
     switch (cur_fields[field]) {
       case pawn_white:
-        console.log("pawn_white");
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
         f1 = x + (y + 1).toString()
         f2 = x + (y + 2).toString()
@@ -151,7 +149,6 @@ function App() {
         break;
 
       case pawn_black:
-        console.log("pawn_black");
         // Prüfen ob Pawn in der Startposition ist & ob vor ihm eine Figur steht
         f1 = x + (y - 1).toString()
         f2 = x + (y - 2).toString()
@@ -180,7 +177,6 @@ function App() {
 
       case knight_white:
       case knight_black:
-        console.log("knight");
         // Alle theoretisch bewegbaren Felder
         f1 = (x + 1).toString() + (y - 2).toString()
         f2 = (x + 2).toString() + (y - 1).toString()
@@ -200,7 +196,6 @@ function App() {
         break;
       case bishop_white:
       case bishop_black:
-        console.log("bisshop")
         // Berechne die möglichen Felder für den Läufer
         // iteration durch 7 weil nur 7 maximal gelaufen werden können
         for (let i = 1; i <= 7; i++) {
@@ -217,9 +212,12 @@ function App() {
           if (f2_prev === true && f2_prevT === true) {
             f2 = (x + i).toString() + (y - i).toString();
             f2_prevT = isTakeableField(f2, cur_fields)
+            console.log(f2, '  is valid?:')
             if (isValidField(f2, cur_fields)) {
+              console.log('true')
               possibleFields.push(f2)
             } else {
+              console.log('false')
               f2_prev = false
             }
           }
@@ -246,7 +244,6 @@ function App() {
         break;
       case rook_black:
       case rook_white:
-        console.log("rook")
         for (let i = 1; i <= 7; i++) {
           // 1 nach rechts 1 nach oben usw.
           if (f1_prev === true && f1_prevT === true) {
@@ -290,7 +287,6 @@ function App() {
         break;
       case king_black:
       case king_white:
-        console.log("king")
         let symetry = [-1, 1]
         for (let i = 0; i < symetry.length; i++) {
           // Links und rechts
@@ -332,7 +328,6 @@ function App() {
         break;
       case queen_black:
       case queen_white:
-        console.log("queen")
         for (let i = 1; i <= 7; i++) {
           if (f1_prev === true && f1_prevT === true) {
             f1 = (x + i).toString() + y.toString();
@@ -422,43 +417,52 @@ function App() {
 
         let checkedFields = []
         console.log("Checked prüfen...")
-        console.log("Possible fields: ", possibleFields)
         for (let i = 0; i < possibleFields.length; i++) {
           let testFields = { ...fields };
           // In das geklonte Feld wird zur Prüfung ob es den Check verhindert der Zug gespielt
-          console.log("possible Field: ", possibleFields[i], "aktuelles Feld: ", testFields[field])
+          // console.log("possible Field: ", possibleFields[i], "aktuelles Feld: ", testFields[field])
 
           testFields[possibleFields[i]] = testFields[field]
           testFields[field] = undefined
           // Prüfe ob im neuen Feld ein Check möglich ist
           // Wenn nicht dann soll das Feld als zulässig markiert werden
-          console.log("klonfeld: ", testFields)
+          // console.log('check mit diesem Feld: ', testFields, !isChecked2(testFields))
           if (!isChecked2(testFields)) {
-            console.log("Verteidigendes Feld: ", possibleFields[i])
             checkedFields.push(possibleFields[i])
           }
         }
-        console.log("Checked Fields:", checkedFields)
         highlightMovableFields(checkedFields)
       } else {
         highlightMovableFields(possibleFields)
       }
     } else {
+
+      if (testFields && testFields[field] === bishop_black && possibleFields.length > 4) {
+        console.log(possibleFields)
+        console.log('32:  ', testFields['32'])
+        console.log('33:  ', testFields['33'])
+        console.log('34:  ', testFields['34'])
+      }
+      
       // Prüfen ob die möglichen Felder den König angreifen können
       if (turn % 2 === 0) {
-        console.log("fields ü field", possibleFields, field)
         if (testFields && possibleFields.includes(whiteKingPosition)) {
-          console.log("poss fields: ", possibleFields, "und das field: ", field)
+          console.log("poss fields: ", possibleFields, "     field: ", field, testFields[field])
+          console.log('white turn with testfields')
           return true;
-        } else if (possibleFields.includes(blackKingPosition)) {
+        } else if (!testFields && possibleFields.includes(blackKingPosition)) {
+          console.log("poss fields: ", possibleFields, "     field: ", field, testFields[field])
+          console.log('white turn without testfields')
           return true;
         } else {
           return false
         }
       } else {
         if (testFields && possibleFields.includes(blackKingPosition)) {
+          console.log('black turn with testfields')
           return true;
-        } else if (possibleFields.includes(whiteKingPosition)) {
+        } else if (!testFields && possibleFields.includes(whiteKingPosition)) {
+          console.log('black turn without testfields')
           return true;
         } else {
           return false
@@ -471,15 +475,21 @@ function App() {
 
 
   const isTakeableField = (field, curFields) => {
-    // weiß
+    var defendCheck = false 
+    if (curFields !== fields) defendCheck = true
+    // weiß if (defendCheck && 
     if (turn % 2 === 0) {
-      if (blackPieces.includes(curFields[field])) {
+      if (defendCheck && whitePieces.includes(curFields[field])) {
+        return false
+      } else if (blackPieces.includes(curFields[field])) {
         return false
       } else {
         return true
       }
     } else {
-      if (whitePieces.includes(curFields[field])) {
+      if (defendCheck && blackPieces.includes(curFields[field])) {
+        return false
+      } else if (whitePieces.includes(curFields[field])) {
         return false
       } else {
         return true
@@ -488,6 +498,8 @@ function App() {
   }
 
   const isValidField = (field, curFields) => {
+    var defendCheck = false 
+    if (curFields !== fields) defendCheck = true
     const fieldKeys = Object.keys(squareNames).map(Number);
     // Es wird geschaut ob das jeweilige markierte Feld, welches geprüft wird innerhalb auf dem Brett liegt
     // + das feld muss in eine number umgewandelt werden, da die fieldKeys vom Typ number sind 
@@ -495,7 +507,9 @@ function App() {
       // Prüfe ob das angezeigte Ziel-Feld eine Schwarze Figur ist
       if (turn % 2 === 0) {
         // Prüfe ob das angezeigte Ziel-Feld eine Weiße Figur ist
-        if (whitePieces.includes(curFields[field])) {
+        if (defendCheck && whitePieces.includes(curFields[field])) {
+          return true
+        } else if (whitePieces.includes(curFields[field])) {
           return false
         } else {
           return true
@@ -504,10 +518,11 @@ function App() {
       // Prüfe falls es eine weiße Figur ist  
       else {
         // Wenn schwarz => Schaue ob das Feld von einer Schwarzen Figur besetzt ist
-        if (blackPieces.includes(curFields[field])) {
+        if (defendCheck && blackPieces.includes(curFields[field])) {
+          return true
+        } else if (blackPieces.includes(curFields[field])) {
           return false
-        }
-        else {
+        } else {
           return true
         }
       }
@@ -563,20 +578,15 @@ function App() {
       } else return
     } else {
       if (blackPieces.includes(fields[field])) {
-        //movePiece(field)
-        console.log(field)
-        setCurrentField(field)
         showMovableFields(field)
         setSelectPiece(true)
         setCurrentField(field)
-        //console.log("Figur ausgewählt", field)
       } else return
     }
   }
 
   const movePiece = (newField) => {
     // Prüfen ob der zu bewegende Square besetzbar ist von der aktuellen Figur 
-    // console.log('piece can be place here:', curMovableFields.includes(newField))
     if (curMovableFields.includes(newField)) {
       // Geschlagene Figur speichern in der geschlagenen Liste
       const takenPiece = fields[newField]
@@ -679,9 +689,7 @@ function App() {
 
   const isChecked2 = (fieldsInput) => {
     // Schwarz greift an 
-    console.log("Reihe: ", turn)
     if (turn % 2 === 0) {
-      console.log("Wo ist der weiße König?", whiteKingPosition)
       for (const [field, piece] of Object.entries(fieldsInput)) {
         if (blackPieces.includes(piece)) {
           if (showMovableFields(field, false, fieldsInput)) {
@@ -724,7 +732,6 @@ function App() {
         if (whitePieces.includes(piece)) {
           if (showMovableFields(field, false)) {
             //setBlackIsChecked(true); 
-            console.log()
             blackIsChecked = true
             setChecked(true)
             return true
@@ -750,21 +757,21 @@ function App() {
 
 
   const newGame = () => {
-
     setTurn(2)
     setFields(fieldsData)
-    console.log("new Gam")
-    //jsakdn
   }
 
 
   // drag drop feature AL-Original
-  const pieceFollow = useRef(null);
-  const fieldsGrid = useRef(null);
+  const pieceFollow = useRef(null)
+  const fieldsGrid = useRef(null)
+  var dragMove = false
+
 
   const mouseDownCB = (event) => {
     if (event.type === 'mousedown') event.preventDefault()
     setMouseDown(true)
+    dragMove = false
     event.target.click()
 
     pieceFollow.current.style.opacity = 0
@@ -775,13 +782,16 @@ function App() {
   const mouseUpCB = (event) => {
     setMouseDown(false)
 
-    if (event.type === 'touchend') {
-      document.elementFromPoint(
-        event.changedTouches[0].pageX,
-        event.changedTouches[0].pageY
-      ).click()
+    if (dragMove) {
+      if (event.type === 'touchend') {
+        document.elementFromPoint(
+          event.changedTouches[0].pageX,
+          event.changedTouches[0].pageY
+        ).click()
+      }
+      else event.target.click()
     }
-    else event.target.click()
+
 
     pieceFollow.current.style.opacity = 0
     let currentMoveTarget = document.querySelector('.move-target')
@@ -820,6 +830,7 @@ function App() {
 
   const MouseMoveCB = (event) => {
     if (!mouseDown) return
+    dragMove = true
 
     let fieldTarget
     if (event.type === 'touchmove') {
@@ -830,7 +841,6 @@ function App() {
     } else fieldTarget = event.target
     let field = fieldTarget.tagName === 'IMG' ? fieldTarget.parentElement : fieldTarget
 
-    console.log(field)
 
     // drag drop effect
     let fieldsGridOffset = fieldsGrid.current.getBoundingClientRect()
@@ -848,6 +858,7 @@ function App() {
     pieceFollow.current.style.top = `${newY}px`
     pieceFollow.current.style.left = `${newX}px`
     pieceFollow.current.style.opacity = 1
+
 
     // field marker
     if (field.classList.contains('move-target')) return
