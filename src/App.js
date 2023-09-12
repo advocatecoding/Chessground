@@ -767,12 +767,20 @@ function App() {
     console.log(event.type)
     setMouseDown(true)
     event.target.click()
+
+    pieceFollow.current.style.opacity = 0
+    let currentMoveTarget = document.querySelector('.move-target')
+    if (currentMoveTarget) currentMoveTarget.classList.remove('move-target')
   }
   
   const mouseUpCB = (event) => {
     console.log(event.type)
     setMouseDown(false)
     event.target.click()
+
+    pieceFollow.current.style.opacity = 0
+    let currentMoveTarget = document.querySelector('.move-target')
+    if (currentMoveTarget) currentMoveTarget.classList.remove('move-target')
   }
 
   const mouseEnterCB = (event) => {
@@ -810,6 +818,10 @@ function App() {
 
   const MouseMoveCB = (event) => {
     if (!mouseDown) return
+    // console.log(event.target)
+    // console.log(event.target.parentElement)
+    const field = event.target.tagName === 'IMG' ? event.target.parentElement : event.target
+
     
     // drag drop effect
     let fieldsGridOffset = fieldsGrid.current.getBoundingClientRect()
@@ -826,10 +838,13 @@ function App() {
     let newX = isBoardRotated ? fieldsGrid.current.offsetWidth - x : x
     pieceFollow.current.style.top = `${newY}px`
     pieceFollow.current.style.left = `${newX}px`
-
+    pieceFollow.current.style.opacity = 1
 
     // field marker
-    // TODO
+    if (field.classList.contains('move-target')) return
+    let currentMoveTarget = document.querySelector('.move-target')
+    if (currentMoveTarget) currentMoveTarget.classList.remove('move-target')
+    field.classList.add('move-target')
   }
 
 
